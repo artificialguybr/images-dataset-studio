@@ -1,0 +1,10 @@
+{
+  "id": "vision-local",
+  "name": "Vision Local",
+  "version": "1.0.0",
+  "protocol": "ids-plugin.v1",
+  "capabilities": ["detection", "segmentation", "embedding", "preannotation", "captioning"],
+  "permissions": ["filesystem:input", "model:cache"],
+  "command": ["./run.py"],
+  "platforms": ["macos-arm64", "macos-x64", "linux-x64", "windows-x64"]
+}

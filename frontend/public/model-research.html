@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Local models — Images Dataset Studio</title>
+<style>
+:root{color-scheme:dark;--bg:#101214;--panel:#181b1f;--panel2:#20242a;--line:#30353d;--text:#f2f0eb;--muted:#a4a8ad;--dim:#747a82;--amber:#e7b85d;--green:#83c78f;--red:#ed817b;--blue:#91b9e9;--mono:"SFMono-Regular",ui-monospace,Menlo,monospace}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0,#252017 0,transparent 30%),var(--bg);color:var(--text);font:15px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1180px;margin:0 auto;padding:64px 28px 90px}.eyebrow{color:var(--amber);font:700 11px var(--mono);letter-spacing:.16em;text-transform:uppercase}h1{font-size:clamp(36px,6vw,72px);line-height:.98;letter-spacing:-.06em;max-width:800px;margin:16px 0 22px}h2{font-size:28px;line-height:1.1;letter-spacing:-.035em;margin:0 0 18px}h3{font-size:18px;margin:0 0 8px}p{margin:0 0 14px}.lede{font-size:20px;line-height:1.35;color:#d4d1ca;max-width:760px}.callout{margin:40px 0;padding:22px 24px;border:1px solid #625332;border-radius:14px;background:linear-gradient(120deg,#211d15,#17191c 65%);font-size:18px}.section{margin-top:72px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}.card strong{display:block;font-size:16px;margin-bottom:7px}.tag{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:100px;color:var(--muted);font:11px var(--mono);margin:3px 3px 0 0}.tag.good{color:var(--green);border-color:#31563b}.tag.warn{color:var(--amber);border-color:#66532d}.tag.bad{color:var(--red);border-color:#613733}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.matrix{width:100%;border-collapse:collapse;min-width:820px;background:var(--panel)}th,td{padding:14px 15px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{font:700 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:#20242a}tr:last-child td{border-bottom:0}.model{font-weight:700;color:var(--text)}.mono{font-family:var(--mono);font-size:12px;color:var(--muted)}.status{font:700 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}.status.rec{color:var(--green)}.status.opt{color:var(--amber)}.status.no{color:var(--red)}.packs{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.pack{padding:24px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.pack.recommended{border-color:#80672f;background:linear-gradient(145deg,#242016,var(--panel) 65%)}.pack-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:16px}.check{font:700 12px var(--mono);color:var(--green);white-space:nowrap}.pack ul{margin:12px 0 0;padding-left:19px;color:#cbc9c4}.pack li{margin:5px 0}code{font-family:var(--mono);font-size:12px;color:#e9c979;background:#27231a;padding:2px 5px;border-radius:4px}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}.note{color:var(--muted);font-size:13px}.decision{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.decision .card{min-height:100%}.install{font-family:var(--mono);font-size:13px;line-height:1.7;color:#ddd7c9;background:#111315;border:1px solid var(--line);border-radius:9px;padding:15px;white-space:pre-wrap}.sources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.source{padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:13px}.source b{display:block;color:var(--text);margin-bottom:3px}@media(max-width:800px){main{padding:40px 18px 70px}.grid,.packs,.decision,.sources{grid-template-columns:1fr}.section{margin-top:52px}.lede{font-size:18px}.callout{margin:28px 0;font-size:16px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Images Dataset Studio · research brief</div>
+  <h1>Local models, without dead weight.</h1>
+  <p class="lede">The right choice is not one universal model. Offer small capability packs and download only what the user will actually use.</p>
+  <div class="callout"><b>Decision:</b> preselect <b>Semantic search</b> and <b>Auto-label images</b>. Keep PII and masks optional. Quality, duplicates, metadata, versions, and export need no model.</div>
+
+  <section class="section">
+    <h2>Where the product needs ML</h2>
+    <div class="grid">
+      <div class="card"><strong>No model</strong><p>Ingest, metadata, blur, exposure, contrast, entropy, resolution, SHA-256, pHash, versions, export, and quarantine.</p><span class="tag good">fast</span><span class="tag good">deterministic</span></div>
+      <div class="card"><strong>Embeddings</strong><p>Text or image search, similarity, clusters, and outliers. One image-text encoder covers the set.</p><span class="tag good">recommended pack</span></div>
+      <div class="card"><strong>Preannotation</strong><p>Suggested boxes and labels. Output starts as <code>pending</code>; it never becomes an automatic decision.</p><span class="tag good">recommended pack</span></div>
+      <div class="card"><strong>PII</strong><p>Faces, text, documents, and plates. Prefer small specialists over a generic VLM.</p><span class="tag warn">high responsibility</span></div>
+      <div class="card"><strong>Masks / polygons</strong><p>Refine a box or click a mask. Install it only when segmentation is genuinely needed.</p><span class="tag warn">optional</span></div>
+      <div class="card"><strong>Label issues</strong><p>Cleanlab is not a model: it needs an external <code>pred_probs</code> matrix. It should not be a default installation.</p><span class="tag bad">incomplete contract</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Selection matrix</h2>
+    <div class="table-wrap"><table class="matrix">
+      <thead><tr><th>Capability</th><th>Model</th><th>Why</th><th>Size / speed</th><th>Decision</th></tr></thead>
+      <tbody>
+        <tr><td>Semantic search — quality</td><td class="model">MobileCLIP2-S2</td><td>Same design, more accurate than S0 while remaining compact.</td><td>35.7M visual + 63.4M text parameters. Officially 77.2% ImageNet zero-shot.</td><td><span class="status opt">advanced option</span></td></tr>
+        <tr><td>Arbitrary boxes + labels</td><td class="model">Florence-2-base-ft</td><td>Detection, phrase grounding, OCR, and prompted segmentation; not limited to the 80 COCO classes.</td><td>0.23B parameters; MIT. Heavy for “tiny,” but the smallest coherent candidate for custom labels.</td><td><span class="status rec">recommended</span></td></tr>
+        <tr><td>Ultra-fast COCO boxes</td><td class="model">YOLOX-Nano</td><td>Apache 2.0 and extremely small.</td><td>0.91M parameters, 1.08 GFLOPs, 25.8 COCO AP, 416×416 input.</td><td><span class="status opt">fallback</span><br><span class="note">COCO classes only.</span></td></tr>
+        <tr><td>OCR for PII</td><td class="model">PP-OCRv5 mobile</td><td>Dedicated detector + recognizer; text regions enable rules for IDs, email, plates, and more.</td><td>4.7 MB detector + 16 MB recognizer. Official CPU: 57.77 ms + 21.20 ms in standard mode.</td><td><span class="status rec">recommended</span></td></tr>
+        <tr><td>Faces for PII</td><td class="model">MediaPipe BlazeFace</td><td>Small, specialized local detector.</td><td>128×128 input; Sparse full-range is about 60% smaller. Short-range: 2.94 ms official CPU.</td><td><span class="status rec">recommended</span></td></tr>
+        <tr><td>Masks</td><td class="model">MobileSAM</td><td>Turns a box or click into a mask/polygon; it does not replace detection or classification.</td><td>9.66M parameters; Apache 2.0; about 12 ms/image GPU in the project benchmark.</td><td><span class="status opt">on demand</span></td></tr>
+        <tr><td>Visual assistant</td><td class="model">SmolVLM-256M</td><td>Description, questions, and transcription; quantized ONNX variants exist.</td><td>256M parameters; Apache 2.0; under 1 GB GPU for one image according to the model card.</td><td><span class="status opt">experimental</span><br><span class="note">do not use as a PII detector.</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin-top:10px">Latencies are official benchmarks on specific hardware. They are not a promise about the user's computer.</p>
+  </section>
+
+  <section class="section">
+    <h2>The catalog I would ship</h2>
+    <div class="packs">
+      <div class="pack recommended"><div class="pack-head"><div><div class="eyebrow">Pack 01</div><h3>Semantic search</h3></div><span class="check">✓ preselected</span></div><p><b>MobileCLIP2-S0</b></p><ul><li>Text and image search</li><li>Similarity, clusters, and outliers</li><li>Smallest download among strong candidates</li><li>Confirm Apple's license before distribution</li></ul></div>
+      <div class="pack recommended"><div class="pack-head"><div><div class="eyebrow">Pack 02</div><h3>Auto-label images</h3></div><span class="check">✓ preselected</span></div><p><b>Florence-2-base-ft</b></p><ul><li>User-defined labels</li><li>Boxes and phrase grounding</li><li>OCR and segmentation from the same model</li><li>Every suggestion remains pending for approval</li></ul></div>
+      <div class="pack"><div class="pack-head"><div><div class="eyebrow">Pack 03</div><h3>Privacy scan</h3></div><span class="status opt">optional</span></div><p><b>PP-OCRv5 mobile + BlazeFace</b></p><ul><li>Text and faces locally</li><li>Creates reviewable issues</li><li>Add plate/document detection only if needed</li><li>Never redact without human confirmation</li></ul></div>
+      <div class="pack"><div class="pack-head"><div><div class="eyebrow">Pack 04</div><h3>Precise masks</h3></div><span class="status opt">optional</span></div><p><b>MobileSAM</b></p><ul><li>Refine a box or click into a mask</li><li>Useful for polygons/masks</li><li>Do not install if you only use bounding boxes</li></ul></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The architecture the product needs</h2>
+    <p class="lede" style="font-size:17px">The core must not know Florence, CLIP, YOLO, Paddle, or any vendor. It knows capabilities; plugins provide implementations.</p>
+    <div class="decision">
+      <div class="card"><h3>One core, three layers</h3><div class="install">CORE
+datasets · jobs · issues · labels · versions
+
+RUNTIME
+ONNX Runtime CPU
+CoreML · CUDA · DirectML · XNNPACK
+
+PLUGINS
+embedding · detection · OCR · face · segmentation
+any external plugin can join</div></div>
+      <div class="card"><h3>Multimodal by contract</h3><p>The contract should not say “use this model.” It should define inputs and outputs:</p><div class="install">image → embedding [N]
+image + prompts → boxes / labels
+image → OCR regions / text
+image → face regions
+image + box / point → mask
+
+Every output carries:
+provider · model_id · revision
+runtime · checksum · confidence</div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Third-party plugins</h3><p>A user can install a plugin for a capability not included in the catalog. The app discovers the plugin, shows its license and requirements, lets the user select a model, and keeps the same review flow.</p><div class="install">plugin installed → capability registered
+model missing → “install” button
+model installed → “use” button
+provider unavailable → real reason, never fake results</div></div>
+  </section>
+  <section class="section">
+    <h2>What should not be a default</h2>
+    <div class="decision">
+      <div class="card"><h3>YOLO-World</h3><p>Interesting because prompts can define custom classes, but it uses the Ultralytics ecosystem and the repository is AGPL-3.0. Do not bundle it without a legal decision.</p><span class="tag bad">do not preselect</span></div>
+      <div class="card"><h3>Grounding DINO Tiny</h3><p>Open-vocabulary and Apache 2.0, but approximately 0.2B parameters and a checkpoint around 689 MB. Excellent quality option; poor lightweight default.</p><span class="tag warn">too large</span></div>
+      <div class="card"><h3>Cleanlab</h3><p>It audits labels; it is not an installable model. The current job requires external <code>pred_probs_path</code>; first generate those probabilities reliably.</p><span class="tag bad">not a pack</span></div>
+      <div class="card"><h3>Quality models</h3><p>Download nothing. OpenCV/Pillow already cover the current detectors with deterministic, cheap, explainable behavior.</p><span class="tag good">zero download</span></div>
+    </div>
+  </section>
+  <section class="section">
+    <h2>Technical decisions before code</h2>
+    <div class="decision">
+      <div class="card"><h3>Runtime</h3><p>Use ONNX Runtime as the common path: CPU by default, with Execution Providers for CUDA, DirectML, CoreML, and XNNPACK.</p><div class="install">CPU → always available
+Apple → CoreML when supported
+NVIDIA → CUDA when installed
+Windows → DirectML when available</div></div>
+      <div class="card"><h3>Provider contract</h3><p>The current registry only reports <code>available()</code>. A local provider must also run inference and declare capabilities.</p><div class="install">model_id
+revision
+runtime
+license
+checksum
+preprocess_version
+output_schema</div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Safety rule</h3><p>The model detects; a person decides. AI boxes enter as <code>source_type=model, status=pending</code>. PII becomes an issue. No score may silently quarantine an item.</p></div>
+  </section>
+  <section class="section">
+    <h2>Next steps</h2>
+    <ol>
+      <li>Create a <code>ModelSpec</code> catalog with id, capability, license, runtime, size, checksum, and status.</li>
+      <li>Add on-demand download with progress, cancellation, and checksum validation.</li>
+      <li>Replace the fixed <code>ViT-B-32</code> embedding with provider configuration; never mix indexes from different models.</li>
+      <li>Implement Florence, OCR, and BlazeFace adapters; the current provider still contains hardcoded OpenAI logic.</li>
+      <li>Measure all four packs on the local fixture before promising “fast.”</li>
+    </ol>
+  </section>
+  <section class="section">
+    <h2>Official sources</h2>
+    <div class="sources">
+      <a class="source" href="https://huggingface.co/apple/MobileCLIP2-S0" target="_blank" rel="noreferrer"><b>Apple MobileCLIP2</b>Models, parameters, latency, and license.</a>
+      <a class="source" href="https://huggingface.co/microsoft/Florence-2-base-ft" target="_blank" rel="noreferrer"><b>Microsoft Florence-2</b>Tasks, benchmarks, parameters, and MIT license.</a>
+      <a class="source" href="https://github.com/Megvii-BaseDetection/YOLOX" target="_blank" rel="noreferrer"><b>Megvii YOLOX</b>Official YOLOX-Nano table and Apache 2.0 license.</a>
+      <a class="source" href="https://docs.ultralytics.com/models/yolo-world/" target="_blank" rel="noreferrer"><b>Ultralytics YOLO-World</b>Open-vocabulary detection and custom classes.</a>
+      <a class="source" href="https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/model_list.md" target="_blank" rel="noreferrer"><b>PaddleOCR</b>Mobile model sizes, accuracy, and latency.</a>
+      <a class="source" href="https://developers.google.com/edge/mediapipe/solutions/vision/face_detector" target="_blank" rel="noreferrer"><b>Google MediaPipe</b>BlazeFace models and CPU/GPU benchmarks.</a>
+      <a class="source" href="https://github.com/ChaoningZhang/MobileSAM" target="_blank" rel="noreferrer"><b>MobileSAM</b>Parameters, speed, and Apache 2.0 license.</a>
+      <a class="source" href="https://onnxruntime.ai/docs/execution-providers/" target="_blank" rel="noreferrer"><b>ONNX Runtime</b>Cross-platform Execution Providers.</a>
+    </div>
+  </section>
+</main>
+  </body>
+  </html>

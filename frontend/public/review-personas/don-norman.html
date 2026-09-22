@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review / Don Norman</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #66736e;
+      --line: #d9e1dc;
+      --paper: #f5f7f4;
+      --white: #fff;
+      --green: #275c4b;
+      --green-soft: #e8f1eb;
+      --orange: #c76631;
+      --orange-soft: #fff0e6;
+      --yellow: #f2cf65;
+      --shadow: 0 16px 36px rgba(25, 48, 39, .08);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      letter-spacing: -.01em;
+    }
+    button { font: inherit; }
+    .app { height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      height: 68px;
+      flex: 0 0 68px;
+      display: flex;
+      align-items: center;
+      padding: 0 42px;
+      background: rgba(255,255,255,.82);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 274px; }
+    .brand-mark {
+      display: grid; place-items: center;
+      width: 30px; height: 30px; border-radius: 9px;
+      color: #fff; background: var(--green); font-weight: 800; font-size: 13px;
+    }
+    .brand-name { font-weight: 760; font-size: 15px; letter-spacing: -.02em; }
+    .crumbs { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+    .crumbs strong { color: var(--ink); font-weight: 700; }
+    .slash { color: #aab5b0; }
+    .top-actions { margin-left: auto; display: flex; align-items: center; gap: 20px; }
+    .dataset { color: var(--muted); font-size: 12px; }
+    .dataset b { color: var(--ink); font-weight: 680; }
+    .avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; background: #dcebe2; color: var(--green); font-weight: 800; }
+
+    main { flex: 1; min-height: 0; padding: 25px 42px 24px; display: flex; flex-direction: column; }
+    .intro { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 21px; }
+    .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--orange); font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+    .eyebrow i { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: var(--orange); }
+    h1 { margin: 7px 0 5px; font-size: 31px; line-height: 1.08; letter-spacing: -.045em; }
+    .lede { margin: 0; color: var(--muted); font-size: 14px; }
+    .mental-model {
+      width: 320px; padding: 13px 16px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--white);
+    }
+    .mental-model .label { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .model-line { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--green); font-size: 12px; font-weight: 700; }
+    .model-line span { height: 1px; flex: 1; background: #bad0c3; }
+    .model-line em { color: var(--orange); font-style: normal; }
+
+    .workspace { min-height: 0; flex: 1; display: grid; grid-template-columns: 294px minmax(440px, 1fr) 350px; gap: 25px; }
+    .rail { display: flex; flex-direction: column; min-height: 0; }
+    .rail-title { display: flex; align-items: center; justify-content: space-between; margin: 1px 0 11px; }
+    .rail-title h2, .examples h2 { margin: 0; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .rail-title .count { color: var(--orange); font-size: 11px; font-weight: 800; }
+    .steps { min-height: 0; display: flex; flex-direction: column; }
+    .step {
+      position: relative; display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 0 0 22px;
+    }
+    .step:not(:last-child)::before { content: ""; position: absolute; left: 16px; top: 32px; bottom: 0; width: 1px; background: #bfd0c5; }
+    .step-num { z-index: 1; width: 33px; height: 33px; display: grid; place-items: center; border: 1px solid #b5c9bd; border-radius: 50%; background: var(--paper); color: var(--green); font-size: 12px; font-weight: 800; }
+    .step.active .step-num { color: #fff; border-color: var(--orange); background: var(--orange); }
+    .step h3 { margin: 2px 0 4px; font-size: 14px; line-height: 1.2; }
+    .step p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.42; }
+    .step .tag { display: inline-flex; margin-top: 8px; padding: 4px 7px; border-radius: 5px; color: var(--green); background: var(--green-soft); font-size: 10px; font-weight: 750; }
+    .step.active .tag { color: #a14d23; background: var(--orange-soft); }
+
+    .evidence { min-width: 0; display: flex; flex-direction: column; }
+    .evidence-head { display: flex; align-items: center; justify-content: space-between; margin: 1px 0 11px; }
+    .evidence-head h2 { margin: 0; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .score { display: flex; align-items: center; gap: 7px; color: var(--green); font-size: 12px; font-weight: 800; }
+    .score::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #49a36f; }
+    .file-card { min-height: 0; flex: 1; display: flex; flex-direction: column; border: 1px solid #cfdad3; border-radius: 13px; background: var(--white); box-shadow: var(--shadow); overflow: hidden; }
+    .file-meta { display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; border-bottom: 1px solid var(--line); }
+    .file-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .file-icon { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 7px; color: #a54d24; background: var(--orange-soft); font-size: 16px; font-weight: 850; }
+    .file-name strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+    .file-name small { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .warning { padding: 6px 8px; border-radius: 5px; color: #a34a22; background: var(--orange-soft); font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .broken-preview { position: relative; min-height: 0; flex: 1; margin: 18px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px dashed #d1b2a3; border-radius: 9px; background: #f8f3ef; }
+    .broken-preview::before, .broken-preview::after { content: ""; position: absolute; width: 145px; height: 145px; border: 1px solid rgba(199,102,49,.12); transform: rotate(45deg); }
+    .broken-preview::after { width: 220px; height: 220px; }
+    .broken-inner { position: relative; z-index: 1; text-align: center; }
+    .broken-glyph { width: 58px; height: 48px; margin: 0 auto 13px; position: relative; border: 2px solid #c87950; border-radius: 5px; background: #fff8f3; }
+    .broken-glyph::before { content: ""; position: absolute; top: 9px; left: 10px; width: 10px; height: 10px; border-radius: 50%; background: #e4b192; }
+    .broken-glyph::after { content: ""; position: absolute; left: 8px; right: 7px; bottom: 7px; height: 17px; border-top: 2px solid #c87950; transform: skewY(-29deg); }
+    .broken-inner strong { display: block; color: #9e4c27; font-size: 15px; }
+    .broken-inner p { margin: 5px 0 0; color: #a27560; font-size: 12px; }
+    .evidence-foot { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--line); }
+    .metric { padding: 12px 15px; border-right: 1px solid var(--line); }
+    .metric:last-child { border-right: 0; }
+    .metric span { display: block; color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
+    .metric b { display: block; margin-top: 4px; font-size: 12px; }
+
+    .decision { min-height: 0; display: flex; flex-direction: column; }
+    .decision-head { display: flex; align-items: center; justify-content: space-between; margin: 1px 0 11px; }
+    .decision-head h2 { margin: 0; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .open-alert { color: #a14d23; font-size: 11px; font-weight: 800; }
+    .impact {
+      padding: 16px 17px; border: 1px solid #e7c2ae; border-left: 4px solid var(--orange); border-radius: 10px; background: #fffaf7;
+    }
+    .impact-kicker { color: var(--orange); font-size: 10px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+    .impact h3 { margin: 7px 0 5px; font-size: 17px; letter-spacing: -.03em; }
+    .impact p { margin: 0; color: #6f625b; font-size: 12px; line-height: 1.45; }
+    .decision-line { display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--muted); font-size: 11px; }
+    .decision-line::before, .decision-line::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+    .actions { display: grid; gap: 9px; }
+    .action { display: flex; align-items: center; gap: 11px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: var(--white); text-align: left; cursor: pointer; transition: border-color .15s, transform .15s, background .15s; }
+    .action:hover { border-color: #a6bcaf; transform: translateY(-1px); }
+    .action.selected { border-color: var(--green); background: var(--green-soft); }
+    .action-icon { width: 27px; height: 27px; display: grid; place-items: center; flex: 0 0 27px; border-radius: 7px; color: var(--green); background: #edf5ef; font-size: 13px; font-weight: 850; }
+    .action.selected .action-icon { color: #fff; background: var(--green); }
+    .action strong { display: block; font-size: 12px; }
+    .action small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .action .check { margin-left: auto; color: var(--green); font-size: 14px; opacity: 0; }
+    .action.selected .check { opacity: 1; }
+    .confirm { margin-top: 12px; padding: 13px 14px; border: 0; border-radius: 8px; color: #fff; background: var(--green); font-weight: 760; cursor: pointer; transition: background .15s; }
+    .confirm:hover { background: #1c493b; }
+    .confirm.done { background: #588a70; }
+    .confirmation { min-height: 17px; margin: 9px 0 0; color: var(--green); font-size: 11px; text-align: center; }
+    .examples { margin-top: auto; padding-top: 13px; }
+    .examples h2 { color: var(--muted); font-size: 10px; }
+    .example-list { display: flex; gap: 7px; margin-top: 8px; }
+    .example { flex: 1; min-width: 0; padding: 8px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--white); cursor: pointer; }
+    .example:hover, .example.active { border-color: #a6bcaf; background: var(--green-soft); }
+    .example b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+    .example span { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
+
+    @media (max-width: 1050px) {
+      .topbar { padding: 0 24px; }
+      main { padding: 20px 24px; }
+      .workspace { grid-template-columns: 250px minmax(360px, 1fr) 290px; gap: 17px; }
+      .mental-model { width: 275px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">R</div><span class="brand-name">Review workspace</span></div>
+      <nav class="crumbs" aria-label="Breadcrumb"><span>Issues</span><span class="slash">/</span><strong>Review</strong></nav>
+      <div class="top-actions"><span class="dataset">Dataset <b>yolo-in-1789003245</b></span><span class="avatar">JM</span></div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <div class="eyebrow"><i></i> One open alert · human review</div>
+          <h1>Make the next decision obvious.</h1>
+          <p class="lede">A compact path from evidence to consequence, so the file never becomes a mystery.</p>
+        </div>
+        <div class="mental-model" aria-label="Mental model sequence">
+          <div class="label">The mental model</div>
+          <div class="model-line"><span>observe</span><span></span><span>understand</span><span></span><em>act</em></div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="rail" aria-label="Review sequence">
+          <div class="rail-title"><h2>Review sequence</h2><span class="count">01 / 01</span></div>
+          <div class="steps">
+            <article class="step active">
+              <div class="step-num">1</div>
+              <div><h3>What happened?</h3><p>The detector found a file it cannot safely read. The preview is intentionally unavailable.</p><span class="tag">corrupt file</span></div>
+            </article>
+            <article class="step">
+              <div class="step-num">2</div>
+              <div><h3>Why does it matter?</h3><p>A score of 1.00 signals high confidence in the failure, not in the image content.</p><span class="tag">confidence ≠ content</span></div>
+            </article>
+            <article class="step">
+              <div class="step-num">3</div>
+              <div><h3>What follows?</h3><p>Quarantine preserves the original while keeping the review set honest.</p><span class="tag">reversible action</span></div>
+            </article>
+          </div>
+        </aside>
+
+        <section class="evidence" aria-label="Evidence">
+          <div class="evidence-head"><h2>Evidence in context</h2><div class="score">Detector score 1.00</div></div>
+          <article class="file-card">
+            <div class="file-meta">
+              <div class="file-name"><div class="file-icon">!</div><div><strong>frame_00481.jpg</strong><small>sample 481 · image/jpeg · 2.4 MB</small></div></div>
+              <span class="warning">Unreadable</span>
+            </div>
+            <div class="broken-preview" role="img" aria-label="Preview unavailable because the file is corrupt">
+              <div class="broken-inner"><div class="broken-glyph"></div><strong>Preview unavailable</strong><p>File is corrupt or incomplete</p></div>
+            </div>
+            <div class="evidence-foot">
+              <div class="metric"><span>Detector</span><b>pillow-verify</b></div>
+              <div class="metric"><span>Result</span><b>verify failed</b></div>
+              <div class="metric"><span>Alert state</span><b>open</b></div>
+            </div>
+          </article>
+        </section>
+
+        <aside class="decision" aria-label="Decision and action">
+          <div class="decision-head"><h2>Decision</h2><span class="open-alert">Open alert</span></div>
+          <div class="impact">
+            <div class="impact-kicker">Consequence of inaction</div>
+            <h3>Bad training signal stays in the set.</h3>
+            <p>Do not label what cannot be inspected. Choose a reversible action that protects downstream review.</p>
+          </div>
+          <div class="decision-line">choose one next step</div>
+          <div class="actions">
+            <button class="action selected" data-action="quarantine" type="button"><span class="action-icon">↗</span><span><strong>Quarantine file</strong><small>Move aside, preserve original</small></span><span class="check">✓</span></button>
+            <button class="action" data-action="recheck" type="button"><span class="action-icon">↻</span><span><strong>Request re-check</strong><small>Try validation again later</small></span><span class="check">✓</span></button>
+            <button class="action" data-action="dismiss" type="button"><span class="action-icon">—</span><span><strong>Dismiss alert</strong><small>Keep file in the review set</small></span><span class="check">✓</span></button>
+          </div>
+          <button class="confirm" id="confirm" type="button">Confirm quarantine</button>
+          <p class="confirmation" id="confirmation" aria-live="polite"></p>
+          <div class="examples">
+            <h2>Review examples</h2>
+            <div class="example-list">
+              <button class="example active" type="button"><b>frame_00481.jpg</b><span>corrupt · open</span></button>
+              <button class="example" type="button"><b>frame_00480.jpg</b><span>valid · reviewed</span></button>
+              <button class="example" type="button"><b>frame_00479.jpg</b><span>blur · needs label</span></button>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+  <script>
+    const actions = [...document.querySelectorAll('.action')];
+    const confirmButton = document.querySelector('#confirm');
+    const confirmation = document.querySelector('#confirmation');
+    const names = { quarantine: 'quarantine', recheck: 're-check', dismiss: 'dismissal' };
+    actions.forEach(action => action.addEventListener('click', () => {
+      actions.forEach(item => item.classList.toggle('selected', item === action));
+      confirmButton.textContent = `Confirm ${names[action.dataset.action]}`;
+      confirmButton.classList.remove('done');
+      confirmation.textContent = '';
+    }));
+    confirmButton.addEventListener('click', () => {
+      const choice = document.querySelector('.action.selected').dataset.action;
+      const feedback = {
+        quarantine: 'The original is preserved in quarantine.',
+        recheck: 'A fresh validation will be requested.',
+        dismiss: 'The alert is dismissed; the file stays in the set.'
+      };
+      confirmButton.classList.add('done');
+      confirmButton.textContent = 'Decision recorded';
+      confirmation.textContent = feedback[choice];
+    });
+    document.querySelectorAll('.example').forEach(example => example.addEventListener('click', () => {
+      document.querySelectorAll('.example').forEach(item => item.classList.toggle('active', item === example));
+    }));
+  </script>
+</body>
+</html>

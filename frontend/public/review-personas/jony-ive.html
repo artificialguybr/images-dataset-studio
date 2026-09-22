@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review · yolo-in-1789003245</title>
+  <style>
+    :root {
+      --paper: #f4f4f1;
+      --surface: #fbfbf9;
+      --surface-2: #eeeeeb;
+      --ink: #242522;
+      --muted: #858782;
+      --line: #d9dad5;
+      --line-dark: #c5c7c1;
+      --orange: #c86934;
+      --orange-soft: #f2e1d5;
+      --green: #71816e;
+      --shadow: 0 22px 44px rgba(37, 38, 34, .08), 0 2px 7px rgba(37, 38, 34, .06);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+
+    .shell {
+      width: min(1392px, calc(100% - 96px));
+      height: 100vh;
+      min-height: 760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 84px;
+      flex: 0 0 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      letter-spacing: -.02em;
+    }
+    .mark {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: #2d2e2b;
+      display: grid;
+      place-items: center;
+      color: #f8f8f5;
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: inset 0 1px 2px rgba(255,255,255,.22), 0 1px 2px rgba(0,0,0,.12);
+    }
+    .brand-name { font-size: 15px; font-weight: 550; }
+    .crumb { color: var(--muted); font-size: 13px; margin-left: 2px; }
+    .top-actions { display: flex; align-items: center; gap: 26px; }
+    .queue {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .close {
+      width: 31px;
+      height: 31px;
+      border: 1px solid var(--line-dark);
+      border-radius: 50%;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: 19px;
+      line-height: 1;
+      transition: .2s ease;
+    }
+    .close:hover { background: var(--surface); color: var(--ink); }
+
+    main {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 262px minmax(535px, 1fr) 286px;
+      gap: 42px;
+      padding: 45px 0 34px;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    h1 {
+      margin: 14px 0 10px;
+      font-weight: 450;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: -.055em;
+    }
+    .intro {
+      margin: 0;
+      max-width: 240px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .alert-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 26px;
+      padding: 8px 11px;
+      color: #9a4e29;
+      background: var(--orange-soft);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .alert-dot { width: 6px; height: 6px; background: var(--orange); border-radius: 50%; }
+
+    .meta {
+      margin-top: 48px;
+      border-top: 1px solid var(--line);
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      min-height: 38px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+    .meta-row span:first-child { color: var(--muted); }
+    .meta-row span:last-child { font-weight: 520; text-align: right; }
+    .meta-row .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    .score { color: var(--green); font-variant-numeric: tabular-nums; }
+
+    .center {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .center-head {
+      height: 31px;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+    }
+    .center-head .eyebrow { color: #a4a59f; }
+    .index { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+    .object-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 13px 0 18px;
+    }
+    .object-shadow {
+      position: absolute;
+      left: 12%; right: 12%; bottom: 36px;
+      height: 34px;
+      background: rgba(45, 46, 43, .14);
+      filter: blur(22px);
+      border-radius: 50%;
+    }
+    .file-object {
+      position: relative;
+      width: min(100%, 548px);
+      aspect-ratio: 1.4 / 1;
+      border-radius: 15px;
+      background: linear-gradient(140deg, #fafaf8 0%, #e9eae6 100%);
+      border: 1px solid #d2d4ce;
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.92);
+      overflow: hidden;
+      transform: translateY(-6px);
+    }
+    .object-topline {
+      position: absolute; left: 0; right: 0; top: 0;
+      height: 35px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(195,197,191,.7);
+      background: rgba(255,255,255,.42);
+      color: #a1a39d;
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .lights { display: flex; gap: 5px; }
+    .lights i { display: block; width: 6px; height: 6px; border-radius: 50%; background: #ced0ca; }
+    .lights i:first-child { background: #d47745; }
+    .canvas {
+      position: absolute; inset: 35px 0 0;
+      display: grid; place-items: center;
+      background-color: #ecece8;
+      background-image: linear-gradient(45deg, #e2e3de 25%, transparent 25%), linear-gradient(-45deg, #e2e3de 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2e3de 75%), linear-gradient(-45deg, transparent 75%, #e2e3de 75%);
+      background-size: 34px 34px;
+      background-position: 0 0, 0 17px, 17px -17px, -17px 0;
+    }
+    .broken-frame {
+      width: 41%;
+      height: 49%;
+      min-width: 190px;
+      min-height: 130px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed #adafa9;
+      background: rgba(250,250,247,.58);
+      color: #969993;
+    }
+    .broken-frame svg { width: 52px; height: 52px; opacity: .72; }
+    .broken-label {
+      position: absolute;
+      margin-top: 112px;
+      color: #72746e;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px;
+      letter-spacing: .03em;
+    }
+    .corrupt-stamp {
+      position: absolute;
+      right: 23px;
+      bottom: 21px;
+      padding: 8px 10px 7px;
+      border: 1px solid rgba(180,90,47,.52);
+      border-radius: 4px;
+      color: #a3532b;
+      font-size: 9px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      transform: rotate(-4deg);
+      background: rgba(247,232,221,.58);
+    }
+    .object-caption {
+      position: absolute;
+      bottom: 6px; left: 0; right: 0;
+      text-align: center;
+      color: #a1a29d;
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .right {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .decision {
+      padding: 18px 0 17px;
+      border-top: 1px solid var(--line);
+    }
+    .decision:first-child { padding-top: 0; border-top: 0; }
+    .decision-title {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 11px;
+      font-size: 13px; font-weight: 580;
+      letter-spacing: -.01em;
+    }
+    .decision-title .tiny { color: var(--muted); font-size: 10px; font-weight: 500; }
+    .decision p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.48;
+    }
+    .signal {
+      display: flex; align-items: center; gap: 10px;
+      margin: 13px 0 10px;
+    }
+    .signal-bar { flex: 1; height: 5px; border-radius: 6px; background: #d8dbd4; overflow: hidden; }
+    .signal-bar b { display: block; width: 100%; height: 100%; background: var(--green); border-radius: inherit; }
+    .signal strong { color: var(--green); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .recommendation {
+      padding: 13px 14px;
+      border-radius: 10px;
+      background: #e7ece5;
+      color: #536451;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .recommendation b { display: block; margin-bottom: 4px; color: #41533f; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+
+    .examples { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--line); }
+    .examples-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .examples-head span:last-child { color: var(--muted); font-size: 10px; }
+    .example-list { display: grid; gap: 8px; }
+    .example {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 10px;
+      background: rgba(251,251,249,.45);
+    }
+    .example-mark { width: 6px; height: 6px; border-radius: 50%; background: #c4c7bf; }
+    .example-mark.bad { background: var(--orange); }
+    .example strong { color: var(--ink); font-weight: 560; }
+
+    .footer {
+      flex: 0 0 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--line);
+    }
+    .footer-note { color: var(--muted); font-size: 11px; }
+    .footer-note kbd {
+      display: inline-grid; place-items: center;
+      min-width: 21px; height: 20px; margin-right: 5px;
+      border: 1px solid var(--line-dark); border-radius: 4px;
+      color: #696b66; background: var(--surface); font-size: 10px;
+    }
+    .actions { display: flex; align-items: center; gap: 9px; }
+    .btn {
+      height: 38px;
+      padding: 0 16px;
+      border: 1px solid var(--line-dark);
+      border-radius: 20px;
+      color: #676963;
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 550;
+      transition: .2s ease;
+    }
+    .btn:hover { background: var(--surface); color: var(--ink); border-color: #aeb0aa; }
+    .btn.primary { border-color: #30312e; color: #f8f8f5; background: #30312e; padding: 0 21px; box-shadow: 0 3px 9px rgba(42,43,40,.15); }
+    .btn.primary:hover { background: #4a4b46; border-color: #4a4b46; }
+    .btn.selected { border-color: var(--green); color: #52634f; background: #e6ece4; }
+    .status { position: fixed; left: 50%; bottom: 95px; transform: translate(-50%, 15px); opacity: 0; pointer-events: none; padding: 9px 15px; border-radius: 20px; color: #f7f7f4; background: #333430; font-size: 11px; transition: .25s ease; }
+    .status.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 1050px) {
+      .shell { width: calc(100% - 48px); }
+      main { grid-template-columns: 220px minmax(430px, 1fr) 240px; gap: 24px; }
+      .file-object { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">r</div>
+        <span class="brand-name">Review</span>
+        <span class="crumb">/ issues</span>
+      </div>
+      <div class="top-actions">
+        <span class="queue">1 open alert</span>
+        <button class="close" aria-label="Close review">×</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="left" aria-label="Issue information">
+        <div class="eyebrow">Dataset / issue 01</div>
+        <h1>yolo-in-<br>1789003245</h1>
+        <p class="intro">A single file requires your attention before this dataset can be trusted.</p>
+        <div class="alert-chip"><span class="alert-dot"></span> corrupt file detected</div>
+        <div class="meta">
+          <div class="meta-row"><span>Detector</span><span>pillow-verify</span></div>
+          <div class="meta-row"><span>Confidence</span><span class="score">1.00</span></div>
+          <div class="meta-row"><span>Type</span><span class="mono">image/jpeg</span></div>
+          <div class="meta-row"><span>Object</span><span class="mono">000238.jpg</span></div>
+          <div class="meta-row"><span>Size</span><span class="mono">2.4 MB</span></div>
+        </div>
+      </section>
+
+      <section class="center" aria-label="File preview">
+        <div class="center-head"><span class="eyebrow">The object in question</span><span class="index">01 / 01</span></div>
+        <div class="object-stage">
+          <div class="object-shadow"></div>
+          <figure class="file-object" aria-label="Corrupted image file preview">
+            <div class="object-topline"><span class="lights"><i></i><i></i><i></i></span><span>preview / unavailable</span><span>jpeg</span></div>
+            <div class="canvas">
+              <div class="broken-frame">
+                <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path d="M12 14h27l13 13v23H12z"/><path d="M38 14v14h14"/><circle cx="24" cy="29" r="3"/><path d="m17 46 9-10 7 7 5-5 9 8"/><path d="M18 50 48 19" stroke="#c86934"/>
+                </svg>
+                <span class="broken-label">IMAGE DATA UNREADABLE</span>
+              </div>
+              <span class="corrupt-stamp">corrupt / verify failed</span>
+            </div>
+          </figure>
+          <div class="object-caption">000238.jpg · object preview</div>
+        </div>
+      </section>
+
+      <aside class="right" aria-label="Decision context">
+        <div class="decision">
+          <div class="decision-title"><span>What we know</span><span class="tiny">verified</span></div>
+          <p>pillow-verify could not decode the file header. The source bytes are present, but the image cannot be safely rendered.</p>
+          <div class="signal"><div class="signal-bar"><b></b></div><strong>1.00</strong></div>
+        </div>
+        <div class="decision">
+          <div class="decision-title"><span>Recommended</span><span class="tiny">system</span></div>
+          <div class="recommendation"><b>Quarantine</b>Keep the dataset intact and isolate this file for later recovery.</div>
+        </div>
+        <div class="examples">
+          <div class="examples-head"><span class="eyebrow">Review examples</span><span>nearby files</span></div>
+          <div class="example-list">
+            <div class="example"><span class="example-mark"></span><strong>000237.jpg</strong><span>readable · 1.8 MB</span></div>
+            <div class="example"><span class="example-mark bad"></span><strong>000238.jpg</strong><span>corrupt · 2.4 MB</span></div>
+            <div class="example"><span class="example-mark"></span><strong>000239.jpg</strong><span>readable · 2.1 MB</span></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-note"><kbd>⌘</kbd><kbd>↵</kbd> confirm decision <span style="margin-left: 12px;">·</span><span style="margin-left: 12px;">you can change this later</span></div>
+      <div class="actions">
+        <button class="btn" data-action="safe">Mark as safe</button>
+        <button class="btn" data-action="inspect">Inspect raw file</button>
+        <button class="btn primary" data-action="quarantine">Quarantine file</button>
+      </div>
+    </footer>
+  </div>
+  <div class="status" role="status" aria-live="polite"></div>
+  <script>
+    const status = document.querySelector('.status');
+    const buttons = document.querySelectorAll('[data-action]');
+    let timer;
+    buttons.forEach(button => button.addEventListener('click', () => {
+      buttons.forEach(item => item.classList.remove('selected'));
+      button.classList.add('selected');
+      const messages = {
+        safe: 'Marked safe · review decision saved',
+        inspect: 'Raw file view opened · no changes made',
+        quarantine: 'Quarantine queued · dataset remains intact'
+      };
+      status.textContent = messages[button.dataset.action];
+      status.classList.add('show');
+      clearTimeout(timer);
+      timer = setTimeout(() => status.classList.remove('show'), 2600);
+    }));
+    document.querySelector('.close').addEventListener('click', event => {
+      event.currentTarget.textContent = '✓';
+      event.currentTarget.setAttribute('aria-label', 'Review complete');
+      document.querySelector('.queue').textContent = 'review complete';
+    });
+  </script>
+</body>
+</html>

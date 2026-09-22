@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review / Issues — Paul Rand</title>
+  <style>
+    :root {
+      --paper: #f4f1e9;
+      --ink: #111111;
+      --red: #eb3b2e;
+      --yellow: #f5c943;
+      --blue: #2e62a4;
+      --line: 2px solid var(--ink);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Arial, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--sans);
+    }
+    button { font: inherit; color: inherit; cursor: pointer; }
+
+    .shell {
+      height: 100vh;
+      min-height: 640px;
+      display: grid;
+      grid-template-rows: 74px 1fr 46px;
+      max-width: 1568px;
+      margin: auto;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      border-bottom: var(--line);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      letter-spacing: -.045em;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 50%;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .brand-name { font-size: 22px; font-weight: 900; }
+    .brand-name em { font-style: normal; color: var(--red); }
+    .topline {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .11em;
+    }
+    .dataset {
+      padding: 9px 12px;
+      border: var(--line);
+      background: var(--yellow);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .02em;
+      text-transform: none;
+    }
+    .open-count { display: flex; align-items: center; gap: 8px; }
+    .red-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--red); }
+
+    main {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(320px, .85fr) minmax(470px, 1.35fr) minmax(300px, .8fr);
+      gap: 0;
+    }
+    .column { min-width: 0; min-height: 0; }
+    .issue-column {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 28px 22px 30px;
+      border-right: var(--line);
+    }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 13px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+    }
+    .eyebrow::before { content: ""; width: 24px; height: 4px; background: var(--red); }
+    h1 {
+      max-width: 390px;
+      margin: 0;
+      font-size: clamp(46px, 5.1vw, 77px);
+      line-height: .86;
+      letter-spacing: -.075em;
+      text-transform: uppercase;
+    }
+    h1 span { display: block; }
+    h1 .red { color: var(--red); }
+    .issue-note {
+      max-width: 320px;
+      margin: 22px 0 0;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.28;
+    }
+    .issue-symbol {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: auto 0 21px 10px;
+    }
+    .issue-symbol .disc {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--red);
+    }
+    .issue-symbol .slash {
+      position: absolute;
+      z-index: 1;
+      left: 73px;
+      top: 18px;
+      width: 25px;
+      height: 136px;
+      background: var(--ink);
+      transform: rotate(31deg);
+    }
+    .issue-symbol .eye {
+      position: absolute;
+      z-index: 2;
+      top: 67px;
+      left: 59px;
+      width: 53px;
+      height: 36px;
+      border-radius: 60% 40% 60% 40%;
+      background: var(--paper);
+      transform: rotate(-31deg);
+    }
+    .issue-symbol .pupil {
+      position: absolute;
+      z-index: 3;
+      top: 76px;
+      left: 80px;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: var(--ink);
+    }
+    .symbol-label {
+      position: absolute;
+      z-index: 4;
+      right: -53px;
+      bottom: 4px;
+      padding: 7px 9px;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      transform: rotate(-8deg);
+    }
+    .issue-id {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 13px;
+      border-top: var(--line);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .evidence-column {
+      display: grid;
+      grid-template-rows: 1fr 132px;
+      border-right: var(--line);
+    }
+    .evidence-stage {
+      position: relative;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      background: #ddd9ce;
+      overflow: hidden;
+    }
+    .evidence-stage::before,
+    .evidence-stage::after {
+      content: "";
+      position: absolute;
+      background: var(--yellow);
+    }
+    .evidence-stage::before { width: 160px; height: 160px; right: -54px; top: -56px; transform: rotate(45deg); }
+    .evidence-stage::after { width: 92px; height: 92px; left: -32px; bottom: 22px; border-radius: 50%; background: var(--blue); }
+    .stage-caption {
+      position: absolute;
+      top: 18px;
+      left: 21px;
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+    }
+    .stage-index {
+      position: absolute;
+      top: 14px;
+      right: 21px;
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .broken-file {
+      position: relative;
+      z-index: 1;
+      width: min(68%, 420px);
+      aspect-ratio: 1.25;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--ink);
+      background: var(--paper);
+      box-shadow: 14px 14px 0 var(--ink);
+    }
+    .broken-file::before,
+    .broken-file::after {
+      content: "";
+      position: absolute;
+      background: var(--ink);
+      transform: rotate(-27deg);
+    }
+    .broken-file::before { width: 6px; height: 128%; }
+    .broken-file::after { width: 128%; height: 6px; }
+    .file-glyph {
+      position: relative;
+      z-index: 1;
+      width: 94px;
+      height: 114px;
+      border: 9px solid var(--red);
+      border-top-width: 22px;
+      transform: rotate(-7deg);
+    }
+    .file-glyph::before { content: ""; position: absolute; left: 17px; right: 17px; top: 29px; height: 9px; background: var(--ink); box-shadow: 0 23px 0 var(--ink); }
+    .file-glyph::after { content: "!"; position: absolute; right: -22px; bottom: -31px; color: var(--red); font-size: 54px; font-weight: 900; }
+    .file-status {
+      position: absolute;
+      left: 18px;
+      bottom: 17px;
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .examples {
+      min-height: 0;
+      padding: 14px 20px 13px;
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .examples-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .examples-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .11em; }
+    .examples-count { color: var(--yellow); font-family: var(--mono); font-size: 11px; }
+    .example-row { display: flex; gap: 12px; height: 76px; }
+    .example {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #74736f;
+      background: #aca99f;
+    }
+    .example::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(120deg, transparent 0 11px, rgba(17,17,17,.42) 12px 14px); }
+    .example:nth-child(1)::before { content: "01"; position: absolute; z-index: 1; left: 7px; top: 6px; color: var(--red); font: 900 23px/1 var(--sans); }
+    .example:nth-child(2) { background: var(--red); }
+    .example:nth-child(2)::before { content: "02"; position: absolute; z-index: 1; right: 7px; bottom: 5px; color: var(--paper); font: 900 25px/1 var(--sans); }
+    .example:nth-child(3) { background: var(--yellow); }
+    .example:nth-child(3)::before { content: "03"; position: absolute; z-index: 1; left: 9px; bottom: 5px; color: var(--ink); font: 900 24px/1 var(--sans); }
+    .example.selected { outline: 3px solid var(--yellow); outline-offset: -3px; }
+
+    .decision-column { display: flex; flex-direction: column; padding: 28px 30px 22px; }
+    .decision-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: var(--line); padding-bottom: 17px; }
+    .decision-head h2 { margin: 0; font-size: 30px; line-height: .9; letter-spacing: -.06em; text-transform: uppercase; }
+    .severity { padding: 7px 8px; background: var(--red); color: var(--paper); font-family: var(--mono); font-size: 10px; font-weight: 700; transform: rotate(3deg); }
+    .facts { margin: 0; padding: 0; list-style: none; }
+    .facts li { display: flex; justify-content: space-between; gap: 15px; padding: 14px 0; border-bottom: 1px solid #98958d; font-size: 12px; }
+    .facts span:first-child { color: #575650; font-family: var(--mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .facts span:last-child { font-weight: 800; text-align: right; }
+    .score-box { display: flex; align-items: center; gap: 15px; margin: 22px 0 20px; }
+    .score { font-size: 62px; font-weight: 900; line-height: .78; letter-spacing: -.09em; }
+    .score-copy { max-width: 148px; font-size: 11px; font-weight: 700; line-height: 1.16; }
+    .score-copy b { display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; }
+    .recommendation { margin-top: auto; padding: 15px; border: var(--line); background: var(--yellow); }
+    .recommendation-label { display: block; margin-bottom: 5px; font-family: var(--mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; }
+    .recommendation strong { display: block; font-size: 26px; line-height: .9; letter-spacing: -.055em; text-transform: uppercase; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px; }
+    .actions button { min-height: 46px; border: var(--line); background: transparent; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+    .actions button:hover, .actions button:focus-visible { background: var(--ink); color: var(--paper); outline: none; }
+    .actions .primary { background: var(--ink); color: var(--paper); }
+    .actions .primary:hover, .actions .primary:focus-visible { background: var(--red); }
+    .decision-status { min-height: 17px; margin-top: 9px; color: var(--red); font-family: var(--mono); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      border-top: var(--line);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .footer-left { display: flex; gap: 24px; }
+    .footer-left span::before { content: "◆"; margin-right: 7px; color: var(--red); font-size: 8px; }
+    .footer-right { color: #67655f; }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .shell { height: auto; min-height: 100vh; }
+      main { grid-template-columns: 1fr; }
+      .column { border-right: 0; border-bottom: var(--line); }
+      .issue-column { min-height: 490px; }
+      .evidence-column { grid-template-rows: 490px 132px; }
+      .decision-column { min-height: 490px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand" aria-label="Review home"><div class="brand-mark">r</div><div class="brand-name">review<em>/</em>issues</div></div>
+      <div class="topline"><div class="open-count"><i class="red-dot"></i> 1 open alert</div><div class="dataset">yolo-in-1789003245</div></div>
+    </header>
+
+    <main>
+      <section class="column issue-column" aria-labelledby="issue-title">
+        <div class="eyebrow">Issue 001 / image integrity</div>
+        <h1 id="issue-title"><span>File</span><span class="red">won't</span><span>open.</span></h1>
+        <p class="issue-note">A visual check stopped before inference. The source image is corrupt or unreadable.</p>
+        <div class="issue-symbol" aria-label="Problem: broken image">
+          <div class="disc"></div><div class="slash"></div><div class="eye"></div><div class="pupil"></div>
+          <div class="symbol-label">NOT READ</div>
+        </div>
+        <div class="issue-id"><span>ALERT / OPEN</span><span>IMG_00427.JPG</span></div>
+      </section>
+
+      <section class="column evidence-column" aria-label="Evidence and review examples">
+        <div class="evidence-stage">
+          <div class="stage-caption">Source evidence / failed decode</div>
+          <div class="stage-index">01 — 01</div>
+          <div class="broken-file" role="img" aria-label="Placeholder for corrupt image file"><div class="file-glyph"></div><div class="file-status">jpeg header // invalid</div></div>
+        </div>
+        <div class="examples">
+          <div class="examples-head"><div class="examples-title">Review examples</div><div class="examples-count">3 visual references</div></div>
+          <div class="example-row">
+            <button class="example selected" type="button" aria-label="Select example one"></button>
+            <button class="example" type="button" aria-label="Select example two"></button>
+            <button class="example" type="button" aria-label="Select example three"></button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="column decision-column" aria-label="Issue decision">
+        <div class="decision-head"><h2>Make<br>the call.</h2><div class="severity">BLOCKER</div></div>
+        <ul class="facts">
+          <li><span>Detector</span><span>pillow-verify</span></li>
+          <li><span>Failure</span><span>corrupt file</span></li>
+          <li><span>Usable score</span><span>1.00 / failed</span></li>
+          <li><span>Suggested next</span><span>quarantine</span></li>
+        </ul>
+        <div class="score-box"><div class="score">1.00</div><div class="score-copy"><b>certainty</b>Detector is certain the file cannot be read.</div></div>
+        <div class="recommendation"><span class="recommendation-label">Recommendation</span><strong>Quarantine<br>this file.</strong></div>
+        <div class="actions"><button class="primary" type="button" data-action="quarantine">Quarantine</button><button type="button" data-action="keep">Keep anyway</button></div>
+        <div class="decision-status" role="status" aria-live="polite"></div>
+      </aside>
+    </main>
+
+    <footer><div class="footer-left"><span>Dataset triage</span><span>Shortcut: Q / K</span></div><div class="footer-right">Review is reversible</div></footer>
+  </div>
+  <script>
+    const status = document.querySelector('.decision-status');
+    const recommendation = document.querySelector('.recommendation strong');
+    const buttons = document.querySelectorAll('[data-action]');
+    function decide(action) {
+      const quarantine = action === 'quarantine';
+      status.textContent = quarantine ? 'Marked for quarantine — ready for next issue' : 'Kept anyway — decision recorded';
+      recommendation.innerHTML = quarantine ? 'Quarantine<br>this file.' : 'Keep<br>this file.';
+      recommendation.parentElement.style.background = quarantine ? 'var(--yellow)' : 'var(--blue)';
+      recommendation.parentElement.style.color = quarantine ? 'var(--ink)' : 'var(--paper)';
+      buttons.forEach(button => button.classList.toggle('primary', button.dataset.action === action));
+    }
+    buttons.forEach(button => button.addEventListener('click', () => decide(button.dataset.action)));
+    document.querySelectorAll('.example').forEach(example => example.addEventListener('click', () => {
+      document.querySelectorAll('.example').forEach(item => item.classList.remove('selected'));
+      example.classList.add('selected');
+    }));
+    document.addEventListener('keydown', event => {
+      if (event.key.toLowerCase() === 'q') decide('quarantine');
+      if (event.key.toLowerCase() === 'k') decide('keep');
+    });
+  </script>
+</body>
+</html>

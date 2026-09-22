@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate — Jony Ive concept</title>
+  <style>
+    :root {
+      --paper: #f4f4f1;
+      --surface: #fbfbf9;
+      --canvas: #e7e7e4;
+      --line: #d8d8d3;
+      --line-strong: #c7c7c1;
+      --ink: #20211f;
+      --muted: #777873;
+      --quiet: #a6a7a1;
+      --accent: #6a6c67;
+      --blue: #32618a;
+      --orange: #af5d3b;
+      --green: #617c65;
+      --shadow: 0 12px 32px rgba(28, 29, 27, .08);
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      letter-spacing: .005em;
+    }
+    button, input { font: inherit; color: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+    .app { height: 100dvh; display: grid; grid-template-rows: 72px minmax(0, 1fr) 42px; }
+    .topbar {
+      display: flex; align-items: center; gap: 28px; padding: 0 31px;
+      background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 196px; }
+    .brand-mark { width: 23px; height: 23px; border: 1px solid var(--ink); border-radius: 50%; position: relative; }
+    .brand-mark::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); left: 8px; top: 8px; }
+    .brand-name { font-size: 12px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+    .crumb { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+    .crumb strong { color: var(--ink); font-weight: 500; }
+    .crumb i { width: 1px; height: 14px; background: var(--line-strong); }
+    .top-spacer { flex: 1; }
+    .autosave { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+    .autosave-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .icon-button { width: 31px; height: 31px; display: grid; place-items: center; color: var(--muted); border-radius: 50%; transition: background .2s var(--ease), color .2s var(--ease); }
+    .icon-button:hover { color: var(--ink); background: #ededeb; }
+    .workspace { min-height: 0; display: grid; grid-template-columns: 211px minmax(0, 1fr) 277px; }
+    .rail, .inspector { background: var(--surface); min-height: 0; }
+    .rail { padding: 25px 19px 18px 25px; border-right: 1px solid var(--line); }
+    .section-label { display: block; margin-bottom: 11px; color: var(--quiet); font-size: 9px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
+    .rail-block + .rail-block { margin-top: 29px; }
+    .modes { display: grid; gap: 3px; }
+    .mode {
+      display: flex; align-items: center; gap: 11px; min-height: 36px; padding: 0 10px;
+      color: var(--muted); border-radius: 4px; text-align: left; transition: color .2s var(--ease), background .2s var(--ease);
+    }
+    .mode:hover { color: var(--ink); background: #f0f0ed; }
+    .mode.active { color: var(--ink); background: #ecece9; }
+    .mode-glyph { width: 18px; height: 18px; display: grid; place-items: center; color: currentColor; }
+    .mode-glyph svg { width: 17px; height: 17px; }
+    .mode small { margin-left: auto; color: var(--quiet); font-size: 10px; }
+    .labels { display: grid; gap: 4px; }
+    .label-choice { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 6px; color: var(--muted); text-align: left; border-radius: 4px; }
+    .label-choice:hover { background: #f0f0ed; color: var(--ink); }
+    .label-choice.active { color: var(--ink); font-weight: 500; }
+    .label-swatch { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+    .label-choice:nth-child(2) .label-swatch { background: var(--orange); }
+    .label-choice:nth-child(3) .label-swatch { background: var(--blue); }
+    .label-choice:nth-child(4) .label-swatch { background: var(--green); }
+    .label-count { margin-left: auto; color: var(--quiet); font-size: 10px; font-variant-numeric: tabular-nums; }
+    .rail-note { position: absolute; bottom: 62px; width: 167px; color: var(--quiet); font-size: 11px; line-height: 1.5; }
+    .stage { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--canvas); }
+    .stage-head { height: 61px; display: flex; align-items: center; padding: 0 28px; border-bottom: 1px solid var(--line); background: rgba(251,251,249,.58); }
+    .file-meta { min-width: 0; }
+    .file-name { display: block; font-size: 13px; font-weight: 500; }
+    .file-sub { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .stage-head-spacer { flex: 1; }
+    .zoom { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+    .zoom button { width: 24px; height: 24px; display: grid; place-items: center; color: var(--muted); border: 1px solid transparent; border-radius: 4px; font-size: 16px; }
+    .zoom button:hover { border-color: var(--line-strong); color: var(--ink); }
+    .viewport { flex: 1; min-height: 0; position: relative; display: grid; place-items: center; padding: 34px 38px 30px; }
+    .artboard {
+      position: relative; width: min(100%, 930px); aspect-ratio: 1.48 / 1; overflow: hidden;
+      background: #d8d9d5; box-shadow: var(--shadow); transition: transform .35s var(--ease);
+    }
+    .artboard.scene-two { transform: translateY(-1px); }
+    .artboard svg { width: 100%; height: 100%; display: block; }
+    .image-caption { position: absolute; left: 16px; bottom: 13px; color: rgba(255,255,255,.72); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; }
+    .annotation { position: absolute; border: 1.5px solid var(--accent); transition: border-color .25s var(--ease), opacity .25s var(--ease); pointer-events: none; }
+    .annotation::before { content: ""; position: absolute; top: -1px; left: -1px; width: 11px; height: 11px; border-top: 2px solid currentColor; border-left: 2px solid currentColor; color: inherit; }
+    .annotation::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; color: inherit; }
+    .annotation span { position: absolute; top: -24px; left: -1px; padding: 3px 7px; background: rgba(251,251,249,.94); color: var(--ink); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; box-shadow: 0 2px 7px rgba(0,0,0,.08); }
+    .annotation.hidden { opacity: 0; }
+    .annotation.person { left: 46.7%; top: 20%; width: 25.5%; height: 66%; color: var(--accent); }
+    .annotation.secondary { left: 70.5%; top: 55%; width: 13.4%; height: 25%; color: var(--quiet); opacity: .66; }
+    .annotation.orange { color: var(--orange); }
+    .annotation.blue { color: var(--blue); }
+    .annotation.green { color: var(--green); }
+    .viewport-tools { position: absolute; right: 28px; bottom: 28px; display: flex; align-items: center; gap: 5px; padding: 4px; background: rgba(251,251,249,.88); border: 1px solid rgba(199,199,193,.8); border-radius: 5px; box-shadow: 0 3px 12px rgba(28,29,27,.08); }
+    .viewport-tools button { width: 28px; height: 28px; display: grid; place-items: center; color: var(--muted); border-radius: 3px; }
+    .viewport-tools button:hover { background: #eeeeeb; color: var(--ink); }
+    .inspector { padding: 25px 23px 20px; border-left: 1px solid var(--line); overflow: hidden; }
+    .inspector-tabs { display: flex; gap: 19px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+    .inspector-tab { position: relative; padding: 0 0 11px; color: var(--quiet); font-size: 10px; font-weight: 600; letter-spacing: .14em; }
+    .inspector-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--ink); opacity: 0; }
+    .inspector-tab.active { color: var(--ink); }
+    .inspector-tab.active::after { opacity: 1; }
+    .inspector h2 { margin: 0 0 6px; font-size: 21px; font-weight: 400; letter-spacing: -.03em; }
+    .inspector-intro { margin: 0 0 23px; color: var(--muted); font-size: 11px; }
+    .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .info-row:last-of-type { border-bottom: 1px solid var(--line); }
+    .info-row dt { color: var(--muted); font-size: 11px; }
+    .info-row dd { margin: 0; font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; }
+    .inspector-section { margin-top: 25px; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .section-heading h3 { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+    .section-heading button { color: var(--muted); font-size: 11px; }
+    .section-heading button:hover { color: var(--ink); }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { padding: 5px 8px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; font-size: 10px; }
+    .chip:hover { border-color: var(--line-strong); color: var(--ink); }
+    .chip.active { color: var(--ink); border-color: var(--ink); }
+    .detail-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-top: 25px; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; text-align: left; }
+    .detail-toggle:hover { color: var(--ink); }
+    .chevron { transition: transform .25s var(--ease); }
+    .detail-toggle.open .chevron { transform: rotate(180deg); }
+    .detail-content { display: none; padding: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .detail-content.open { display: block; }
+    .history { display: none; }
+    .history.visible { display: block; }
+    .history-item { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .history-time { color: var(--quiet); font-size: 10px; }
+    .history-copy strong { display: block; font-size: 11px; font-weight: 500; }
+    .history-copy span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .footer { display: flex; align-items: center; gap: 18px; padding: 0 25px; background: var(--surface); border-top: 1px solid var(--line); }
+    .footer-status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+    .footer-status .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .footer .spacer { flex: 1; }
+    .footer-count { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .footer button { min-height: 27px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 3px; color: var(--muted); font-size: 11px; }
+    .footer button:hover { color: var(--ink); border-color: var(--ink); }
+    .footer .save { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+    .footer .save:hover { background: #3a3b38; }
+    .toast { position: fixed; left: 50%; bottom: 59px; transform: translate(-50%, 12px); padding: 8px 13px; background: var(--ink); color: var(--surface); border-radius: 3px; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .2s var(--ease), transform .2s var(--ease); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    @media (max-width: 980px) {
+      html, body { overflow: auto; }
+      .app { min-height: 100dvh; height: auto; grid-template-rows: 64px auto 42px; }
+      .workspace { grid-template-columns: 174px minmax(0, 1fr); min-height: calc(100dvh - 106px); }
+      .inspector { grid-column: 1 / -1; border: 0; border-top: 1px solid var(--line); }
+      .rail-note { display: none; }
+      .viewport { min-height: 520px; }
+    }
+    @media (max-width: 620px) {
+      .topbar { padding: 0 16px; gap: 12px; }
+      .brand { min-width: auto; }
+      .crumb { display: none; }
+      .autosave { display: none; }
+      .workspace { display: block; }
+      .rail { display: flex; gap: 17px; overflow-x: auto; padding: 14px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .rail-block, .rail-block + .rail-block { margin: 0; min-width: max-content; }
+      .modes { display: flex; }
+      .mode { min-height: 30px; padding: 0 8px; }
+      .mode small { display: none; }
+      .labels { display: flex; }
+      .label-choice { width: auto; }
+      .label-count { display: none; }
+      .stage-head { padding: 0 16px; }
+      .viewport { padding: 20px 14px; min-height: 360px; }
+      .artboard { width: 100%; }
+      .inspector { padding: 22px 18px; }
+      .footer { padding: 0 16px; }
+      .footer-count { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand" aria-label="Annotate studio">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">Annotate</span>
+      </div>
+      <div class="crumb"><span>Atlas / interiors</span><i></i><strong>Label</strong></div>
+      <div class="top-spacer"></div>
+      <div class="autosave"><span class="autosave-dot"></span><span id="autosaveText">All changes saved</span></div>
+      <button class="icon-button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts">⌘</button>
+      <button class="icon-button" aria-label="More options" title="More options">···</button>
+    </header>
+
+    <main class="workspace">
+      <aside class="rail" aria-label="Annotation tools">
+        <section class="rail-block">
+          <span class="section-label">Mode</span>
+          <div class="modes" role="tablist" aria-label="Annotation mode">
+            <button class="mode active" role="tab" aria-selected="true" data-mode="Box"><span class="mode-glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.5" y="4" width="13" height="12" rx="1"/><path d="M7 4V2.8M13 17.2V16"/></svg></span><span>Box</span><small>B</small></button>
+            <button class="mode" role="tab" aria-selected="false" data-mode="Brush"><span class="mode-glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 15 8.8-8.8 2 2L7 17H4v-3z"/><path d="m11.8 5.2 1.3-1.3 2 2-1.3 1.3"/></svg></span><span>Brush</span><small>R</small></button>
+            <button class="mode" role="tab" aria-selected="false" data-mode="Point"><span class="mode-glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10" cy="10" r="5.1"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/></svg></span><span>Point</span><small>P</small></button>
+          </div>
+        </section>
+        <section class="rail-block">
+          <span class="section-label">Label</span>
+          <div class="labels" role="listbox" aria-label="Label class">
+            <button class="label-choice active" role="option" aria-selected="true" data-label="Person"><span class="label-swatch"></span><span>Person</span><span class="label-count">04</span></button>
+            <button class="label-choice" role="option" aria-selected="false" data-label="Object"><span class="label-swatch"></span><span>Object</span><span class="label-count">12</span></button>
+            <button class="label-choice" role="option" aria-selected="false" data-label="Architecture"><span class="label-swatch"></span><span>Architecture</span><span class="label-count">08</span></button>
+            <button class="label-choice" role="option" aria-selected="false" data-label="Background"><span class="label-swatch"></span><span>Background</span><span class="label-count">03</span></button>
+          </div>
+        </section>
+        <p class="rail-note">Choose a tool, then draw directly over the image. Your labels stay local until you save.</p>
+      </aside>
+
+      <section class="stage" aria-label="Image annotation workspace">
+        <div class="stage-head">
+          <div class="file-meta"><span class="file-name" id="fileName">atrium_04.jpg</span><span class="file-sub" id="fileSub">Frame 04 of 18 · 4.2 MB</span></div>
+          <div class="stage-head-spacer"></div>
+          <div class="zoom"><button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomValue">100%</span><button id="zoomIn" aria-label="Zoom in">+</button></div>
+        </div>
+        <div class="viewport">
+          <div class="artboard" id="artboard" tabindex="0" aria-label="Image of a quiet atrium with annotation overlay">
+            <svg viewBox="0 0 960 648" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Mock photograph of a sunlit atrium">
+              <rect width="960" height="648" fill="#d4d7d4"/>
+              <rect width="960" height="648" fill="#c2c8c6" opacity=".35"/>
+              <path d="M0 0h960v104H0z" fill="#e9eae6" opacity=".76"/>
+              <path d="M0 104 244 210v438H0z" fill="#b9c0be"/>
+              <path d="m960 104-248 106v438h248z" fill="#bbc0bc"/>
+              <path d="M246 210h468v438H246z" fill="#e2e2dc"/>
+              <path d="M246 210h468L620 0H340z" fill="#eef0ec"/>
+              <path d="M340 0 246 210M620 0l94 210M480 0v210" stroke="#b4bbb8" stroke-width="3" opacity=".72"/>
+              <path d="M0 648 246 470h468l246 178z" fill="#c4c8c3"/>
+              <path d="M0 569h960" stroke="#aaafaa" stroke-width="2" opacity=".45"/>
+              <rect x="291" y="275" width="89" height="220" rx="42" fill="#acb4b1"/>
+              <rect x="315" y="259" width="42" height="256" rx="21" fill="#d9ddda" opacity=".7"/>
+              <path d="M322 504h26v91h-26z" fill="#858f8b" opacity=".75"/>
+              <circle cx="336" cy="229" r="43" fill="#a9b3ae"/>
+              <path d="M312 218c18-27 43-20 52-3-8 21-29 33-52 24z" fill="#78837d" opacity=".54"/>
+              <path d="M330 171c-17 16-23 36-16 57 19-8 31-20 39-38-5-12-12-17-23-19z" fill="#6c7b73"/>
+              <path d="M333 167c15 16 18 31 13 43-12-5-22-12-28-25 2-9 7-15 15-18z" fill="#6c7b73" opacity=".82"/>
+              <path d="M786 493c0-46 26-76 65-76s64 30 64 76v51H786z" fill="#8d9691"/>
+              <path d="M798 495c0-38 20-60 53-60s52 22 52 60" fill="none" stroke="#d8dad4" stroke-width="13" opacity=".75"/>
+              <ellipse cx="842" cy="551" rx="82" ry="13" fill="#777f7a" opacity=".24"/>
+              <path d="M115 537h108" stroke="#8f9792" stroke-width="5"/><path d="M124 538v67m90-67v67" stroke="#8f9792" stroke-width="4"/>
+              <path d="M120 534c5-27 27-44 50-44s46 17 51 44" fill="none" stroke="#adb5b0" stroke-width="10"/>
+              <rect x="31" y="70" width="135" height="4" fill="#f5f5f1" opacity=".7"/>
+              <rect x="791" y="75" width="120" height="4" fill="#f5f5f1" opacity=".7"/>
+            </svg>
+            <div class="annotation person" id="primaryAnnotation"><span id="annotationLabel">Person · 98%</span></div>
+            <div class="annotation secondary" id="secondaryAnnotation"><span>Object · 91%</span></div>
+            <span class="image-caption">ATRIUM / NATURAL LIGHT / 04</span>
+          </div>
+          <div class="viewport-tools" aria-label="Canvas controls">
+            <button id="toggleLabels" aria-pressed="true" title="Toggle label overlays"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2.5 10s2.7-4 7.5-4 7.5 4 7.5 4-2.7 4-7.5 4-7.5-4-7.5-4Z"/><circle cx="10" cy="10" r="1.8"/></svg></button>
+            <button id="fitCanvas" aria-label="Fit image"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M7 3H3v4M13 3h4v4M17 13v4h-4M3 13v4h4"/></svg></button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="Image details">
+        <div class="inspector-tabs" role="tablist">
+          <button class="inspector-tab active" role="tab" aria-selected="true" data-panel="details">Details</button>
+          <button class="inspector-tab" role="tab" aria-selected="false" data-panel="history">History</button>
+        </div>
+        <div id="detailsPanel">
+          <h2 id="selectedLabel">Person</h2>
+          <p class="inspector-intro" id="modeSummary">Primary annotation · box mode</p>
+          <dl>
+            <div class="info-row"><dt>Confidence</dt><dd id="confidence">98.2%</dd></div>
+            <div class="info-row"><dt>Coordinates</dt><dd>448, 130 — 693, 557</dd></div>
+            <div class="info-row"><dt>Created</dt><dd>Today, 10:42</dd></div>
+          </dl>
+          <section class="inspector-section">
+            <div class="section-heading"><h3>Related labels</h3><button id="clearRelated">Clear</button></div>
+            <div class="chip-row" id="chips"><button class="chip active">Person</button><button class="chip">Subject</button><button class="chip">Foreground</button></div>
+          </section>
+          <button class="detail-toggle" id="detailToggle" aria-expanded="false"><span>Annotation details</span><span class="chevron">⌄</span></button>
+          <div class="detail-content" id="detailContent">A single primary subject is framed with a generous margin. The secondary object remains visible but quiet, ready for review.</div>
+        </div>
+        <div class="history" id="historyPanel">
+          <h2>History</h2>
+          <p class="inspector-intro">Small, reversible changes.</p>
+          <div class="history-item"><span class="history-time">10:42</span><div class="history-copy"><strong>Label updated</strong><span>Person · 98.2% confidence</span></div></div>
+          <div class="history-item"><span class="history-time">10:39</span><div class="history-copy"><strong>Box adjusted</strong><span>Moved 12 px to the left</span></div></div>
+          <div class="history-item"><span class="history-time">10:38</span><div class="history-copy"><strong>Image opened</strong><span>atrium_04.jpg</span></div></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-status"><span class="status-dot" id="statusDot"></span><span id="statusText">Saved moments ago</span></div>
+      <div class="spacer"></div>
+      <span class="footer-count" id="footerCount">4 of 18 labeled</span>
+      <button id="undo">Undo</button>
+      <button class="save" id="save">Save changes</button>
+    </footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const $ = (selector) => document.querySelector(selector);
+    const modes = document.querySelectorAll('.mode');
+    const labels = document.querySelectorAll('.label-choice');
+    const state = { mode: 'Box', label: 'Person', savedLabel: 'Person', frame: 4, zoom: 100, labelsVisible: true };
+    const labelColors = { Person: 'accent', Object: 'orange', Architecture: 'blue', Background: 'green' };
+    const confidence = { Person: '98.2%', Object: '91.4%', Architecture: '96.1%', Background: '88.7%' };
+    const toast = (message) => { $('#toast').textContent = message; $('#toast').classList.add('show'); clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 1800); };
+    const setDirty = (dirty) => { $('#statusText').textContent = dirty ? 'Unsaved changes' : 'Saved moments ago'; $('#statusDot').style.background = dirty ? '#af5d3b' : 'var(--green)'; $('#autosaveText').textContent = dirty ? 'Editing locally' : 'All changes saved'; };
+
+    modes.forEach((button) => button.addEventListener('click', () => {
+      modes.forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); });
+      button.classList.add('active'); button.setAttribute('aria-selected', 'true'); state.mode = button.dataset.mode;
+      $('#modeSummary').textContent = `Primary annotation · ${state.mode.toLowerCase()} mode`;
+      $('#primaryAnnotation').style.borderStyle = state.mode === 'Brush' ? 'dashed' : 'solid';
+      $('#primaryAnnotation').style.borderRadius = state.mode === 'Point' ? '50%' : '0';
+      if (state.mode === 'Point') { $('#primaryAnnotation').style.width = '18px'; $('#primaryAnnotation').style.height = '18px'; $('#primaryAnnotation').style.left = '59%'; $('#primaryAnnotation').style.top = '51%'; }
+      else { $('#primaryAnnotation').style.width = ''; $('#primaryAnnotation').style.height = ''; $('#primaryAnnotation').style.left = ''; $('#primaryAnnotation').style.top = ''; }
+      setDirty(true); toast(`${state.mode} mode selected`);
+    }));
+
+    labels.forEach((button) => button.addEventListener('click', () => {
+      labels.forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); });
+      button.classList.add('active'); button.setAttribute('aria-selected', 'true'); state.label = button.dataset.label;
+      const color = labelColors[state.label]; $('#primaryAnnotation').className = `annotation person ${color}`;
+      $('#annotationLabel').textContent = `${state.label} · ${confidence[state.label]}`;
+      $('#selectedLabel').textContent = state.label; $('#confidence').textContent = confidence[state.label];
+      document.querySelector('#chips .chip').textContent = state.label;
+      setDirty(true); toast(`${state.label} label applied`);
+    }));
+
+    document.querySelectorAll('.inspector-tab').forEach((tab) => tab.addEventListener('click', () => {
+      document.querySelectorAll('.inspector-tab').forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-selected', 'false'); });
+      tab.classList.add('active'); tab.setAttribute('aria-selected', 'true');
+      const history = tab.dataset.panel === 'history'; $('#detailsPanel').style.display = history ? 'none' : 'block'; $('#historyPanel').classList.toggle('visible', history);
+    }));
+
+    $('#detailToggle').addEventListener('click', () => { const open = $('#detailContent').classList.toggle('open'); $('#detailToggle').classList.toggle('open', open); $('#detailToggle').setAttribute('aria-expanded', open); });
+    $('#clearRelated').addEventListener('click', () => { document.querySelectorAll('#chips .chip').forEach((chip) => chip.classList.remove('active')); toast('Related labels cleared'); setDirty(true); });
+    $('#toggleLabels').addEventListener('click', () => { state.labelsVisible = !state.labelsVisible; $('#primaryAnnotation').classList.toggle('hidden', !state.labelsVisible); $('#secondaryAnnotation').classList.toggle('hidden', !state.labelsVisible); $('#toggleLabels').setAttribute('aria-pressed', state.labelsVisible); toast(state.labelsVisible ? 'Labels shown' : 'Labels hidden'); });
+    $('#fitCanvas').addEventListener('click', () => { state.zoom = 100; $('#zoomValue').textContent = '100%'; $('#artboard').style.transform = ''; toast('Canvas fit to view'); });
+    $('#zoomIn').addEventListener('click', () => { state.zoom = Math.min(140, state.zoom + 10); $('#zoomValue').textContent = `${state.zoom}%`; $('#artboard').style.transform = `scale(${state.zoom / 100})`; });
+    $('#zoomOut').addEventListener('click', () => { state.zoom = Math.max(80, state.zoom - 10); $('#zoomValue').textContent = `${state.zoom}%`; $('#artboard').style.transform = `scale(${state.zoom / 100})`; });
+    $('#undo').addEventListener('click', () => { state.label = state.savedLabel; labels.forEach((item) => { const active = item.dataset.label === state.label; item.classList.toggle('active', active); item.setAttribute('aria-selected', active); }); $('#selectedLabel').textContent = state.label; $('#confidence').textContent = confidence[state.label]; $('#annotationLabel').textContent = `${state.label} · ${confidence[state.label]}`; setDirty(false); toast('Last change undone'); });
+    $('#save').addEventListener('click', () => { state.savedLabel = state.label; setDirty(false); toast('Changes saved'); });
+    $('#artboard').addEventListener('keydown', (event) => { if (event.key.toLowerCase() === 'l') $('#toggleLabels').click(); if (event.key === '+') $('#zoomIn').click(); if (event.key === '-') $('#zoomOut').click(); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+[project]
+name = "images-dataset-studio"
+version = "0.1.0"
+description = "Criar, organizar, limpar, revisar, versionar e exportar datasets de imagens"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlmodel>=0.0.22",
+    "pydantic-settings>=2.4",
+    "pillow>=10.4",
+    "opencv-python-headless>=4.10",
+    "numpy>=2.0",
+    "python-multipart>=0.0.9",
+    "pyarrow>=25.0.1",
+    "mcp>=1.12,<2",
+]
+
+[project.optional-dependencies]
+ml = [
+    "open-clip-torch>=2.26",
+    "torch>=2.4",
+]
+
+[tool.uv]
+package = false

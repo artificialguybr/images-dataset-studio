@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate — Don Norman</title>
+  <style>
+    :root {
+      --paper: #f4f1ea;
+      --surface: #fffdf8;
+      --surface-2: #ece9e1;
+      --ink: #17212b;
+      --muted: #68727a;
+      --line: #d8d5cc;
+      --navy: #1e3445;
+      --navy-soft: #dce6eb;
+      --orange: #d16b35;
+      --orange-soft: #f6e2d5;
+      --teal: #2c766f;
+      --teal-soft: #dcece7;
+      --yellow: #e7b84c;
+      --shadow: 0 10px 30px rgba(23, 33, 43, .08);
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .01em;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-rows: 64px 1fr; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; border-bottom: 1px solid var(--line); background: var(--surface);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; letter-spacing: -.02em; }
+    .brand-mark { width: 26px; height: 26px; border: 2px solid var(--navy); border-radius: 50%; position: relative; }
+    .brand-mark::after { content: ""; position: absolute; width: 7px; height: 7px; background: var(--orange); border-radius: 50%; top: 7px; left: 7px; }
+    .brand span { color: var(--muted); font-weight: 500; margin-left: 2px; }
+    .project { display: flex; align-items: center; gap: 22px; }
+    .frame-count { color: var(--muted); font-size: 12px; }
+    .save-state { display: flex; align-items: center; gap: 7px; color: var(--teal); font-weight: 650; }
+    .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+    .save-state.pending { color: var(--orange); }
+    .save-state.pending .save-dot { background: var(--orange); }
+    .button {
+      border: 1px solid var(--line); border-radius: 7px; background: var(--surface); padding: 8px 13px;
+      cursor: pointer; font-weight: 650; transition: background .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    .button:hover { background: var(--surface-2); border-color: #b9b5ac; }
+    .button:focus-visible, .mode:focus-visible, .label-chip:focus-visible, .text-button:focus-visible, .scene-target:focus-visible { outline: 3px solid rgba(209,107,53,.34); outline-offset: 2px; }
+    .button.primary { color: white; background: var(--navy); border-color: var(--navy); padding-inline: 17px; }
+    .button.primary:hover { background: #284a60; }
+    .workspace { display: grid; grid-template-columns: 220px minmax(590px, 1fr) 344px; min-height: 0; }
+    .sidebar, .inspector { min-height: 0; background: var(--surface); }
+    .sidebar { border-right: 1px solid var(--line); padding: 24px 18px 20px; display: flex; flex-direction: column; }
+    .eyebrow { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1, h2, h3, p { margin: 0; }
+    .sidebar h1 { margin-top: 4px; font-size: 17px; letter-spacing: -.025em; }
+    .side-copy { color: var(--muted); margin-top: 6px; font-size: 12px; }
+    .steps { margin: 27px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; }
+    .step { display: flex; gap: 10px; align-items: center; color: var(--muted); padding: 8px 7px; border-radius: 7px; }
+    .step-index { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; font-size: 11px; font-weight: 700; }
+    .step.active { background: var(--navy-soft); color: var(--navy); font-weight: 700; }
+    .step.active .step-index { border-color: var(--navy); background: var(--navy); color: white; }
+    .side-footer { margin-top: auto; border-top: 1px solid var(--line); padding-top: 16px; }
+    .tip { color: var(--muted); font-size: 11px; }
+    .tip strong { display: block; color: var(--ink); font-size: 12px; margin-bottom: 3px; }
+    .main { min-width: 0; display: flex; flex-direction: column; padding: 21px 27px 24px; }
+    .main-head { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+    .main h2 { font-size: 20px; letter-spacing: -.03em; }
+    .main-sub { color: var(--muted); margin-top: 4px; font-size: 12px; }
+    .nav-buttons { display: flex; gap: 7px; }
+    .icon-button { width: 34px; height: 32px; padding: 0; font-size: 17px; line-height: 1; }
+    .canvas-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .canvas {
+      position: relative; flex: 1; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius);
+      background: #d8d4cc; box-shadow: var(--shadow);
+    }
+    .canvas-toolbar { height: 43px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border-bottom: 1px solid rgba(23,33,43,.12); background: rgba(255,253,248,.9); }
+    .mode { border: 1px solid transparent; background: transparent; border-radius: 6px; padding: 6px 10px; cursor: pointer; color: var(--muted); font-size: 12px; }
+    .mode:hover { background: var(--surface-2); color: var(--ink); }
+    .mode.active { background: var(--navy); color: white; font-weight: 700; }
+    .zoom { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .scene {
+      position: absolute; inset: 43px 0 0; display: grid; place-items: center; background: #b9c2c2;
+      background-image: linear-gradient(135deg, rgba(255,255,255,.13) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.13) 50%, rgba(255,255,255,.13) 75%, transparent 75%);
+      background-size: 24px 24px;
+    }
+    .scene svg { width: min(94%, 780px); height: 94%; filter: drop-shadow(0 9px 10px rgba(23,33,43,.18)); }
+    .scene-target { cursor: pointer; outline: none; }
+    .scene-target .target-outline { fill: transparent; stroke: transparent; stroke-width: 4; }
+    .scene-target:hover .target-outline, .scene-target.selected .target-outline { stroke: var(--orange); stroke-dasharray: 7 5; }
+    .scene-target.selected .target-outline { stroke-width: 5; }
+    .canvas-hint { position: absolute; bottom: 15px; left: 15px; border: 1px solid rgba(23,33,43,.15); border-radius: 6px; padding: 7px 10px; background: rgba(255,253,248,.9); color: var(--muted); font-size: 11px; }
+    .canvas-hint strong { color: var(--ink); }
+    .canvas-foot { display: flex; justify-content: space-between; align-items: center; color: var(--muted); padding-top: 10px; font-size: 11px; }
+    .legend { display: flex; gap: 13px; }
+    .legend span { display: flex; align-items: center; gap: 5px; }
+    .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
+    .legend .done { background: var(--teal); }
+    .legend .current { border: 2px solid var(--orange); }
+    .inspector { border-left: 1px solid var(--line); padding: 22px 21px 19px; overflow: hidden; display: flex; flex-direction: column; }
+    .inspect-head { display: flex; justify-content: space-between; align-items: start; }
+    .inspector h2 { font-size: 16px; letter-spacing: -.02em; }
+    .status { color: var(--orange); background: var(--orange-soft); padding: 4px 7px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .status.saved { color: var(--teal); background: var(--teal-soft); }
+    .selected-object { color: var(--muted); margin-top: 4px; }
+    .section { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 15px; }
+    .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 11px; }
+    .section-title h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+    .text-button { color: var(--navy); background: none; border: 0; cursor: pointer; font-size: 11px; font-weight: 700; padding: 2px 0; }
+    .text-button:hover { color: var(--orange); }
+    .brief { padding: 11px 12px; border-left: 3px solid var(--orange); background: var(--orange-soft); color: #63351f; border-radius: 0 7px 7px 0; }
+    .brief strong { display: block; color: var(--ink); margin-bottom: 3px; }
+    .brief p { font-size: 12px; }
+    .field { display: grid; grid-template-columns: 76px 1fr; gap: 8px; align-items: start; margin: 8px 0; }
+    .field label { color: var(--muted); font-size: 11px; padding-top: 7px; }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); padding: 7px 9px; font-weight: 600; }
+    .field input:focus { border-color: var(--navy); outline: 2px solid var(--navy-soft); }
+    .label-list { display: grid; gap: 6px; }
+    .label-row { display: flex; width: 100%; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; background: transparent; font: inherit; color: inherit; text-align: left; }
+    .label-row:hover, .label-row.selected { border-color: var(--line); background: var(--surface-2); }
+    .swatch { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+    .label-row b { font-size: 12px; }
+    .label-row small { color: var(--muted); margin-left: auto; }
+    .undo-row { margin-top: auto; border-top: 1px solid var(--line); padding-top: 14px; display: flex; gap: 8px; align-items: center; }
+    .undo-row .button { flex: 1; }
+    .undo-row .button:disabled { opacity: .42; cursor: not-allowed; }
+    .kbd { border: 1px solid var(--line); border-bottom-width: 2px; padding: 1px 5px; border-radius: 4px; color: var(--muted); font-size: 10px; }
+    .toast { position: fixed; right: 27px; bottom: 22px; background: var(--navy); color: white; padding: 10px 14px; border-radius: 7px; box-shadow: var(--shadow); transform: translateY(15px); opacity: 0; pointer-events: none; transition: .2s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    @media (max-width: 1050px) {
+      .workspace { grid-template-columns: 185px minmax(480px, 1fr) 300px; }
+      .main { padding-inline: 18px; }
+      .inspector { padding-inline: 15px; }
+    }
+    @media (max-width: 800px) {
+      .app { display: block; }
+      .topbar { height: auto; min-height: 64px; padding: 14px 16px; gap: 12px; flex-wrap: wrap; }
+      .project { margin-left: auto; }
+      .workspace { display: block; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); padding: 16px; }
+      .steps { margin-top: 13px; display: flex; overflow-x: auto; }
+      .side-footer { display: none; }
+      .main { min-height: 620px; padding: 18px 14px; }
+      .canvas { min-height: 450px; }
+      .inspector { border-left: 0; border-top: 1px solid var(--line); min-height: 560px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true"></div>annotate <span>/ product affordances</span></div>
+      <div class="project">
+        <span class="frame-count" id="frame-count">Frame 04 of 12</span>
+        <div class="save-state" id="save-state"><i class="save-dot"></i><span id="save-label">All changes saved</span></div>
+        <button class="button primary" id="save" type="button">Save labels</button>
+      </div>
+    </header>
+    <div class="workspace">
+      <aside class="sidebar" aria-label="Annotation workflow">
+        <div class="eyebrow">Study / kitchen-objects</div>
+        <h1>Label the visible cues</h1>
+        <p class="side-copy">Make each decision easy to explain later.</p>
+        <ol class="steps">
+          <li class="step active"><span class="step-index">1</span><span>Annotate</span></li>
+          <li class="step"><span class="step-index">2</span><span>Review</span></li>
+          <li class="step"><span class="step-index">3</span><span>Export</span></li>
+        </ol>
+        <div class="side-footer">
+          <div class="tip"><strong>Don Norman lens</strong>Mark what the object tells a person to do — not just what it is.</div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="main-head">
+          <div><div class="eyebrow">Annotate / Frame 04</div><h2>What does this scene afford?</h2><p class="main-sub">Select an object, then record the cue, the action, and the expected result.</p></div>
+          <div class="nav-buttons"><button class="button icon-button" id="prev" type="button" aria-label="Previous frame">←</button><button class="button icon-button" id="next" type="button" aria-label="Next frame">→</button></div>
+        </div>
+        <div class="canvas-wrap">
+          <div class="canvas" aria-label="Annotated kitchen scene">
+            <div class="canvas-toolbar" role="toolbar" aria-label="Annotation mode">
+              <button class="mode active" type="button" data-mode="select">↖ Select</button>
+              <button class="mode" type="button" data-mode="box">□ Box</button>
+              <button class="mode" type="button" data-mode="point">⊙ Point</button>
+              <span class="zoom">100% · <span id="mode-note">select an object</span></span>
+            </div>
+            <div class="scene">
+              <svg viewBox="0 0 760 470" role="img" aria-label="A kettle beside a mug on a kitchen counter">
+                <rect width="760" height="470" fill="#c8c0b3"/>
+                <rect y="0" width="760" height="278" fill="#d9d4cb"/>
+                <path d="M0 82h760M0 164h760M0 246h760" stroke="#c3bdb3" stroke-width="2"/>
+                <path d="M90 0v278M224 0v278M360 0v278M499 0v278M641 0v278" stroke="#c3bdb3" stroke-width="2"/>
+                <rect y="278" width="760" height="20" fill="#a6907e"/>
+                <rect y="298" width="760" height="172" fill="#897464"/>
+                <path d="M0 318h760M0 380h760M150 298v172M385 298v172M620 298v172" stroke="#735f52" stroke-width="3"/>
+                <g class="scene-target" data-label="kettle" tabindex="0" aria-label="Kettle, currently selected">
+                  <rect class="target-outline" x="103" y="135" width="288" height="142" rx="22"/>
+                  <path d="M142 206c0-54 33-81 100-81s101 27 101 81c0 39-23 65-101 65s-100-26-100-65Z" fill="#e7e9e6" stroke="#52636a" stroke-width="4"/>
+                  <path d="M168 156c20-40 118-38 146 0" fill="none" stroke="#52636a" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M325 190c38-31 68-28 77-11 8 15-9 36-54 43" fill="none" stroke="#52636a" stroke-width="12" stroke-linecap="round"/>
+                  <path d="M144 187c-37-17-54-10-54 7 0 17 22 27 56 25" fill="none" stroke="#52636a" stroke-width="10" stroke-linecap="round"/>
+                  <circle cx="242" cy="207" r="13" fill="#d16b35"/><path d="M239 204h7M242 200v15" stroke="white" stroke-width="2"/>
+                  <path d="M215 108c-10-16 15-22 3-39M251 108c-10-16 15-22 3-39M287 108c-10-16 15-22 3-39" fill="none" stroke="#f4f1ea" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+                </g>
+                <g class="scene-target" data-label="mug" tabindex="0" aria-label="Mug">
+                  <rect class="target-outline" x="443" y="205" width="147" height="100" rx="14"/>
+                  <path d="M454 218h93v58c0 16-12 27-46 27s-47-11-47-27Z" fill="#f3ede1" stroke="#866d5b" stroke-width="4"/>
+                  <path d="M547 232c37-12 50 1 47 20-2 17-18 28-46 23" fill="none" stroke="#866d5b" stroke-width="9"/>
+                  <path d="M464 218c22 9 52 9 82 0" fill="none" stroke="#d16b35" stroke-width="7"/>
+                </g>
+                <g class="scene-target" data-label="switch" tabindex="0" aria-label="Wall switch">
+                  <rect class="target-outline" x="594" y="80" width="62" height="106" rx="8"/>
+                  <rect x="601" y="87" width="48" height="92" rx="4" fill="#f4f1ea" stroke="#8c928e" stroke-width="3"/>
+                  <rect x="615" y="103" width="20" height="46" rx="3" fill="#bcc5c0"/><path d="M625 108v34" stroke="#6e7d79" stroke-width="3"/>
+                </g>
+                <g fill="#2c766f" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13" font-weight="700">
+                  <rect x="120" y="291" width="95" height="25" rx="5" fill="#dcece7"/><text x="133" y="308">kettle · 0.96</text>
+                  <rect x="469" y="319" width="77" height="25" rx="5" fill="#dcece7"/><text x="482" y="336">mug · 0.91</text>
+                  <rect x="592" y="193" width="91" height="25" rx="5" fill="#dcece7"/><text x="605" y="210">switch · 0.88</text>
+                </g>
+              </svg>
+              <div class="canvas-hint"><strong>Click an object</strong> to inspect its annotation</div>
+            </div>
+          </div>
+          <div class="canvas-foot"><div class="legend"><span><i class="done"></i> saved label</span><span><i class="current"></i> selected object</span></div><span id="selection-count">3 labels on this frame</span></div>
+        </div>
+      </main>
+
+      <aside class="inspector" aria-label="Annotation details">
+        <div class="inspect-head"><div><div class="eyebrow">Selected object</div><h2 id="object-title">Kettle</h2><p class="selected-object" id="object-subtitle">Visual cue · high confidence</p></div><span class="status saved" id="object-status">Saved</span></div>
+        <section class="section">
+          <div class="section-title"><h3>Intent, action, result</h3><button class="text-button" id="toggle-details" type="button" aria-expanded="true">Hide detail</button></div>
+          <div id="details">
+            <div class="brief"><strong>Why this mark?</strong><p id="brief-copy">The orange button signals the next action: start heating.</p></div>
+            <div class="field"><label for="intent">Objective</label><input id="intent" value="Heat water" aria-label="Objective"></div>
+            <div class="field"><label for="action">Action</label><input id="action" value="Press orange button" aria-label="Action"></div>
+            <div class="field"><label for="result">Consequence</label><input id="result" value="Water begins to boil" aria-label="Consequence"></div>
+          </div>
+        </section>
+        <section class="section">
+          <div class="section-title"><h3>Labels on frame</h3><span class="eyebrow">3 total</span></div>
+          <div class="label-list" id="label-list">
+            <button class="label-row selected" type="button" data-label-row="kettle"><i class="swatch" style="background:var(--orange)"></i><b>Kettle</b><small>affordance</small></button>
+            <button class="label-row" type="button" data-label-row="mug"><i class="swatch" style="background:var(--teal)"></i><b>Mug</b><small>container</small></button>
+            <button class="label-row" type="button" data-label-row="switch"><i class="swatch" style="background:var(--yellow)"></i><b>Wall switch</b><small>control</small></button>
+          </div>
+        </section>
+        <div class="undo-row"><button class="button" id="undo" type="button" disabled>↶ Undo</button><span class="kbd">⌘ Z</span></div>
+      </aside>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite">Labels saved</div>
+  <script>
+    const data = {
+      kettle: { title: 'Kettle', sub: 'Visual cue · high confidence', intent: 'Heat water', action: 'Press orange button', result: 'Water begins to boil', brief: 'The orange button signals the next action: start heating.' },
+      mug: { title: 'Mug', sub: 'Object role · medium confidence', intent: 'Hold a drink', action: 'Pour liquid into opening', result: 'Drink stays contained', brief: 'The open top and handle communicate holding and carrying.' },
+      switch: { title: 'Wall switch', sub: 'Control · high confidence', intent: 'Turn the light on', action: 'Flip the rocker upward', result: 'The room becomes brighter', brief: 'The raised rocker and familiar placement make the control discoverable.' }
+    };
+    let selected = 'kettle';
+    let mode = 'select';
+    let dirty = false;
+    let undoSnapshot = null;
+    let frame = 4;
+    const $ = (id) => document.getElementById(id);
+    const toast = (message) => { $('toast').textContent = message; $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 1700); };
+    function setDirty(value) {
+      dirty = value;
+      $('save-state').classList.toggle('pending', value);
+      $('save-label').textContent = value ? 'Unsaved changes' : 'All changes saved';
+      $('object-status').textContent = value ? 'Pending' : 'Saved';
+      $('object-status').classList.toggle('saved', !value);
+      $('undo').disabled = !value;
+    }
+    function choose(label) {
+      selected = label;
+      const item = data[label];
+      $('object-title').textContent = item.title;
+      $('object-subtitle').textContent = item.sub;
+      $('intent').value = item.intent; $('action').value = item.action; $('result').value = item.result;
+      $('brief-copy').textContent = item.brief;
+      document.querySelectorAll('.scene-target').forEach((el) => el.classList.toggle('selected', el.dataset.label === label));
+      document.querySelectorAll('.label-row').forEach((el) => el.classList.toggle('selected', el.dataset.labelRow === label));
+    }
+    document.querySelectorAll('.scene-target').forEach((el) => {
+      el.addEventListener('click', () => { if (mode !== 'select') { toast(mode === 'box' ? 'Box mode: object marked' : 'Point mode: cue marked'); setDirty(true); } choose(el.dataset.label); });
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(el.dataset.label); } });
+    });
+    document.querySelectorAll('.label-row').forEach((el) => {
+      el.addEventListener('click', () => choose(el.dataset.labelRow));
+    });
+    document.querySelectorAll('.mode').forEach((el) => el.addEventListener('click', () => {
+      mode = el.dataset.mode; document.querySelectorAll('.mode').forEach((m) => m.classList.toggle('active', m === el));
+      $('mode-note').textContent = mode === 'select' ? 'select an object' : mode + ' a cue';
+    }));
+    ['intent', 'action', 'result'].forEach((id) => {
+      $(id).addEventListener('focus', () => {
+        if (!undoSnapshot) undoSnapshot = { label: selected, values: { intent: data[selected].intent, action: data[selected].action, result: data[selected].result } };
+      });
+      $(id).addEventListener('input', (event) => { data[selected][id] = event.target.value; setDirty(true); });
+    });
+    $('save').addEventListener('click', () => { setDirty(false); undoSnapshot = null; toast('Labels saved'); });
+    $('undo').addEventListener('click', () => {
+      if (undoSnapshot) { Object.assign(data[undoSnapshot.label], undoSnapshot.values); choose(undoSnapshot.label); undoSnapshot = null; }
+      else choose(selected);
+      setDirty(false); toast('Last edit undone');
+    });
+    $('toggle-details').addEventListener('click', () => {
+      const hidden = $('details').hidden = !$('details').hidden;
+      $('toggle-details').textContent = hidden ? 'Show detail' : 'Hide detail'; $('toggle-details').setAttribute('aria-expanded', String(!hidden));
+    });
+    function moveFrame(delta) { frame = Math.min(12, Math.max(1, frame + delta)); $('frame-count').textContent = 'Frame ' + String(frame).padStart(2, '0') + ' of 12'; toast('Frame ' + String(frame).padStart(2, '0') + ' loaded'); }
+    $('prev').addEventListener('click', () => moveFrame(-1)); $('next').addEventListener('click', () => moveFrame(1));
+    document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && dirty) { e.preventDefault(); $('undo').click(); } });
+  </script>
+</body>
+</html>

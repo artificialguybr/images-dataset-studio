@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review — One decision</title>
+  <style>
+    :root {
+      --bg: #0b0b0d;
+      --panel: #121215;
+      --panel-2: #18181c;
+      --line: rgba(255,255,255,.12);
+      --muted: #8e8e98;
+      --soft: #c8c8d0;
+      --white: #f6f6f7;
+      --red: #ff453a;
+      --orange: #ff9f0a;
+      --green: #30d158;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 73% 39%, rgba(255,69,58,.09), transparent 28%),
+        radial-gradient(circle at 18% 82%, rgba(255,255,255,.035), transparent 28%),
+        var(--bg);
+      color: var(--white);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      letter-spacing: -.01em;
+    }
+    button { font: inherit; }
+    .shell { width: min(1400px, calc(100% - 96px)); height: 100%; margin: auto; display: flex; flex-direction: column; }
+    header { height: 76px; flex: 0 0 76px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 13px; font-size: 14px; font-weight: 650; letter-spacing: -.02em; }
+    .mark { width: 23px; height: 27px; position: relative; display: inline-block; }
+    .mark::before { content: ""; position: absolute; width: 17px; height: 22px; top: 4px; left: 1px; background: var(--white); border-radius: 48% 52% 45% 50%; transform: rotate(-8deg); }
+    .mark::after { content: ""; position: absolute; width: 9px; height: 4px; top: 0; left: 13px; background: var(--white); border-radius: 100% 0; transform: rotate(-35deg); }
+    .crumb { color: var(--muted); font-size: 13px; font-weight: 500; }
+    .crumb b { color: var(--soft); font-weight: 600; }
+    .top-right { display: flex; align-items: center; gap: 22px; color: var(--muted); font-size: 12px; }
+    .open-pill { color: #ffb4ae; display: inline-flex; align-items: center; gap: 7px; text-transform: uppercase; letter-spacing: .13em; font-size: 10px; font-weight: 700; }
+    .open-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 13px rgba(255,69,58,.9); }
+
+    main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(420px, .92fr); gap: clamp(48px, 8vw, 132px); padding: 48px 0 34px; }
+    .story { min-width: 0; display: flex; flex-direction: column; }
+    .eyebrow { margin: 0 0 21px; color: var(--muted); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; font-weight: 650; }
+    h1 { margin: 0; max-width: 750px; font-size: clamp(48px, 5.5vw, 84px); line-height: .97; letter-spacing: -.075em; font-weight: 650; }
+    h1 em { color: var(--red); font-style: normal; }
+    .lead { max-width: 560px; margin: 25px 0 0; color: var(--soft); font-size: 18px; line-height: 1.4; letter-spacing: -.025em; }
+    .lead strong { color: var(--white); font-weight: 600; }
+    .evidence { margin-top: auto; display: grid; grid-template-columns: 142px 1fr; gap: 24px; align-items: end; }
+    .broken-file { height: 112px; position: relative; overflow: hidden; border: 1px solid rgba(255,69,58,.32); background: #171719; }
+    .broken-file::before { content: ""; position: absolute; inset: 0; opacity: .44; background: repeating-linear-gradient(135deg, transparent 0 9px, rgba(255,69,58,.24) 10px 11px, transparent 12px 21px); }
+    .broken-file::after { content: ""; position: absolute; width: 42px; height: 55px; top: 26px; left: 49px; border: 2px solid rgba(255,255,255,.6); border-radius: 4px; transform: rotate(-7deg); box-shadow: inset 0 0 0 5px rgba(255,255,255,.04); }
+    .file-x { position: absolute; z-index: 1; top: 43px; left: 63px; color: var(--red); font-size: 22px; font-weight: 300; }
+    .file-caption { position: absolute; bottom: 9px; left: 10px; z-index: 1; color: #ff8e87; font: 600 9px/1 monospace; letter-spacing: .12em; }
+    .evidence-copy { padding-bottom: 2px; }
+    .evidence-copy .label { margin-bottom: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 700; }
+    .filename { color: var(--white); font-size: 17px; font-weight: 600; letter-spacing: -.035em; }
+    .path { margin-top: 7px; color: var(--muted); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+
+    .decision { min-width: 0; align-self: center; width: 100%; max-width: 520px; }
+    .decision-kicker { display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .13em; font-weight: 700; }
+    .decision-kicker span:last-child { color: var(--white); font-variant-numeric: tabular-nums; }
+    .score { padding: 29px 0 22px; display: flex; align-items: flex-end; gap: 18px; }
+    .score-number { font-size: clamp(88px, 10vw, 142px); line-height: .75; letter-spacing: -.1em; font-weight: 650; }
+    .score-meta { padding-bottom: 4px; }
+    .score-meta strong { display: block; font-size: 22px; letter-spacing: -.045em; }
+    .score-meta small { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; }
+    .recommendation { position: relative; padding: 22px 24px; background: linear-gradient(112deg, rgba(255,69,58,.13), rgba(255,159,10,.045)); border: 1px solid rgba(255,69,58,.42); }
+    .recommendation::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 3px; background: var(--red); }
+    .recommendation .tag { color: #ffaaa4; text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 750; }
+    .recommendation h2 { margin: 9px 0 6px; font-size: 33px; line-height: 1; letter-spacing: -.06em; font-weight: 650; }
+    .recommendation p { margin: 0; color: var(--soft); font-size: 14px; line-height: 1.4; }
+    .action { width: 100%; margin-top: 16px; padding: 18px 20px; border: 0; border-radius: 2px; background: var(--white); color: #0b0b0d; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 17px; font-weight: 700; letter-spacing: -.03em; transition: background .2s, color .2s, transform .2s; }
+    .action:hover { background: #ffb2ad; }
+    .action:active { transform: scale(.995); }
+    .action.done { background: var(--green); }
+    .action .arrow { font-size: 24px; line-height: 0; font-weight: 400; }
+    .secondary { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; color: var(--muted); font-size: 12px; }
+    .text-btn { border: 0; padding: 3px 0; color: var(--soft); background: transparent; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+    .text-btn:hover { color: var(--white); }
+    .detector { text-align: right; }
+    .detector b { color: var(--soft); font-weight: 600; }
+
+    footer { height: 88px; flex: 0 0 88px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); }
+    .examples { display: flex; align-items: center; gap: 18px; }
+    .examples .count { color: var(--white); font-size: 25px; font-weight: 600; letter-spacing: -.07em; }
+    .examples .copy { color: var(--muted); font-size: 12px; line-height: 1.3; }
+    .examples .copy b { display: block; color: var(--soft); font-weight: 550; }
+    .examples-btn { border: 1px solid var(--line); border-radius: 2px; background: transparent; color: var(--soft); padding: 11px 15px; cursor: pointer; font-size: 12px; }
+    .examples-btn:hover { border-color: rgba(255,255,255,.35); color: var(--white); }
+    .example-strip { display: none; position: absolute; right: 48px; bottom: 106px; width: 280px; padding: 16px; background: #202024; border: 1px solid var(--line); box-shadow: 0 18px 50px #000; }
+    .example-strip.visible { display: block; }
+    .example-strip h3 { margin: 0 0 12px; font-size: 12px; color: var(--soft); text-transform: uppercase; letter-spacing: .12em; }
+    .example-strip div { display: flex; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--line); color: var(--muted); font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .example-strip div b { color: var(--white); font-weight: 500; }
+    .footnote { color: #5f5f68; font-size: 11px; }
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .shell { width: min(100% - 40px, 620px); }
+      header { height: 66px; flex-basis: 66px; }
+      .top-right .crumb { display: none; }
+      main { display: block; padding: 38px 0 44px; }
+      .decision { margin-top: 56px; max-width: none; }
+      .evidence { margin-top: 50px; }
+      footer { height: auto; min-height: 88px; padding: 22px 0; }
+      .footnote { display: none; }
+      .example-strip { right: 20px; bottom: 92px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true"></span><span>Review</span><span class="crumb">/ <b>yolo-in-1789003245</b></span></div>
+      <div class="top-right"><span class="crumb">Image integrity</span><span class="open-pill"><i></i>1 open alert</span></div>
+    </header>
+
+    <main>
+      <section class="story" aria-labelledby="page-title">
+        <p class="eyebrow">Make the call</p>
+        <h1 id="page-title">This file<br>is <em>not</em> safe.</h1>
+        <p class="lead">The review signal is clear. <strong>One corrupt file</strong> was detected before it reached the dataset.</p>
+        <div class="evidence">
+          <div class="broken-file" role="img" aria-label="Visual placeholder for a corrupt image file"><span class="file-x">×</span><span class="file-caption">READ ERROR</span></div>
+          <div class="evidence-copy"><div class="label">Flagged asset</div><div class="filename">frame_008421.jpg</div><div class="path">yolo-in-1789003245 / train / images</div></div>
+        </div>
+      </section>
+
+      <section class="decision" aria-labelledby="decision-title">
+        <div class="decision-kicker"><span>Integrity check</span><span>01 / 01</span></div>
+        <div class="score"><div class="score-number">1.00</div><div class="score-meta"><strong>Corrupt file</strong><small>Detector confidence</small></div></div>
+        <div class="recommendation"><div class="tag">Recommended next step</div><h2 id="decision-title">Quarantine it.</h2><p>Keep this file out of training until the source can be recovered.</p></div>
+        <button class="action" id="quarantine" type="button"><span>Quarantine file</span><span class="arrow">→</span></button>
+        <div class="secondary"><button class="text-btn" id="keep" type="button">Keep in review instead</button><span class="detector">Verified by <b>pillow-verify</b></span></div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="examples"><span class="count">03</span><span class="copy"><b>Review examples</b>Context from nearby files</span><button class="examples-btn" id="examples" type="button" aria-expanded="false">View examples&nbsp; +</button></div>
+      <div class="footnote">Decision is reversible for 30 days</div>
+    </footer>
+  </div>
+  <aside class="example-strip" id="example-strip" aria-hidden="true"><h3>Nearby review examples</h3><div><b>frame_008419.jpg</b><span>0.98</span></div><div><b>frame_008420.jpg</b><span>0.99</span></div><div><b>frame_008422.jpg</b><span>1.00</span></div></aside>
+  <script>
+    const quarantine = document.getElementById('quarantine');
+    const keep = document.getElementById('keep');
+    const examples = document.getElementById('examples');
+    const strip = document.getElementById('example-strip');
+    quarantine.addEventListener('click', () => {
+      quarantine.classList.add('done');
+      quarantine.querySelector('span').textContent = 'Quarantined';
+      quarantine.querySelector('.arrow').textContent = '✓';
+      quarantine.setAttribute('aria-label', 'File quarantined');
+      keep.textContent = 'Undo quarantine';
+    });
+    keep.addEventListener('click', () => {
+      quarantine.classList.remove('done');
+      quarantine.querySelector('span').textContent = 'Quarantine file';
+      quarantine.querySelector('.arrow').textContent = '→';
+      quarantine.removeAttribute('aria-label');
+      keep.textContent = 'Keep in review instead';
+    });
+    examples.addEventListener('click', () => {
+      const open = strip.classList.toggle('visible');
+      examples.setAttribute('aria-expanded', String(open));
+      strip.setAttribute('aria-hidden', String(!open));
+      examples.textContent = open ? 'Hide examples  −' : 'View examples  +';
+    });
+  </script>
+</body>
+</html>

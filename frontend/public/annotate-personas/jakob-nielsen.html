@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate / Jakob Nielsen</title>
+  <style>
+    :root {
+      --ink-950: #101821;
+      --ink-900: #17222d;
+      --ink-800: #22303d;
+      --ink-700: #314253;
+      --ink-500: #66788a;
+      --ink-300: #afbbc5;
+      --paper: #f6f8f9;
+      --line: #d8e0e5;
+      --lime: #c9f447;
+      --lime-deep: #668b00;
+      --amber: #f2b64a;
+      --danger: #e67868;
+      --canvas-sky: #dcebf1;
+      --canvas-ground: #c4d0c1;
+      --canvas-road: #778591;
+      --canvas-road-light: #95a2aa;
+      --surface: #ffffff;
+      --lime-wash: #f2f7df;
+      --lime-fill: rgba(201, 244, 71, .13);
+      --amber-fill: rgba(242, 182, 74, .14);
+      --ink-overlay: rgba(16, 24, 33, .82);
+      --building-a: #75818a;
+      --building-b: #66737d;
+      --building-c: #829099;
+      --window: #cbdde2;
+      --tree: #566a4b;
+      --car-body: #d9e1e4;
+      --car-glass: #455764;
+      --car-window: #bbd3da;
+      --wheel: #273742;
+      --skin: #b06947;
+      --figure: #263845;
+      --bike: #253944;
+      --shadow: 0 10px 28px rgba(16, 24, 33, .11);
+      --radius: 10px;
+      --focus: 0 0 0 3px var(--lime), 0 0 0 5px var(--ink-950);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      color: var(--ink-950);
+      background: var(--paper);
+      font: 13px/1.4 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .01em;
+    }
+    button { font: inherit; }
+    button:focus-visible, [tabindex]:focus-visible { outline: none; box-shadow: var(--focus); }
+
+    .app { min-height: 100vh; display: grid; grid-template-rows: 64px 1fr; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      padding: 0 22px; color: var(--paper); background: var(--ink-950); border-bottom: 1px solid var(--ink-700);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 250px; }
+    .brand-mark { width: 25px; height: 25px; display: grid; place-items: center; background: var(--lime); color: var(--ink-950); font-weight: 900; border-radius: 4px; }
+    .brand-name { font-weight: 800; letter-spacing: .14em; font-size: 12px; }
+    .brand-context { color: var(--ink-300); border-left: 1px solid var(--ink-700); padding-left: 12px; }
+    .top-center { display: flex; align-items: center; gap: 12px; color: var(--ink-300); }
+    .kbd { border: 1px solid var(--ink-500); color: var(--paper); padding: 2px 6px; border-radius: 4px; font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .top-actions { display: flex; align-items: center; gap: 10px; min-width: 250px; justify-content: flex-end; }
+    .save-state { display: flex; align-items: center; gap: 7px; color: var(--ink-300); white-space: nowrap; }
+    .save-dot { width: 7px; height: 7px; background: var(--lime); border-radius: 50%; }
+    .plain-top { border: 0; background: transparent; color: var(--paper); padding: 8px; cursor: pointer; border-radius: 5px; }
+    .plain-top:hover { background: var(--ink-800); }
+
+    .workspace { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 362px; gap: 14px; padding: 14px 18px 18px; }
+    .panel { min-height: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .canvas-panel { display: grid; grid-template-rows: 54px minmax(0, 1fr) 38px; overflow: hidden; }
+    .canvas-head { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 0 14px 0 18px; }
+    .file-title { display: flex; align-items: center; gap: 10px; }
+    .file-title strong { font-size: 14px; }
+    .file-meta { color: var(--ink-500); font-size: 12px; }
+    .live-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 4px; background: var(--lime-wash); color: var(--lime-deep); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .live-chip i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--lime-deep); }
+    .view-actions { display: flex; gap: 4px; }
+    .icon-btn { width: 32px; height: 30px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--ink-700); cursor: pointer; font-weight: 800; }
+    .icon-btn:hover { border-color: var(--line); background: var(--paper); }
+
+    .canvas-wrap { min-height: 0; padding: 12px; background: var(--canvas-frame); display: grid; place-items: center; }
+    .artboard { position: relative; width: 100%; height: 100%; min-height: 300px; border: 1px solid var(--canvas-border); background: var(--canvas-sky); overflow: hidden; }
+    .artboard svg { display: block; width: 100%; height: 100%; }
+    .annotation { fill: var(--lime-fill); stroke: var(--lime); stroke-width: 4; vector-effect: non-scaling-stroke; }
+    .annotation.secondary { fill: var(--amber-fill); stroke: var(--amber); stroke-dasharray: 8 6; }
+    .annotation-label { fill: var(--ink-950); font-size: 17px; font-weight: 800; }
+    .crosshair { stroke: var(--ink-950); stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: .7; }
+    .canvas-hint { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 7px; align-items: center; padding: 7px 9px; color: var(--paper); background: var(--ink-overlay); border-radius: 5px; font-size: 11px; pointer-events: none; }
+    .canvas-hint b { color: var(--lime); }
+    .canvas-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px 0 18px; border-top: 1px solid var(--line); color: var(--ink-500); font-size: 11px; }
+    .coordinates { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .zoom { display: flex; align-items: center; gap: 8px; }
+    .zoom button { border: 0; background: transparent; color: var(--ink-700); cursor: pointer; padding: 3px 6px; font-weight: 800; }
+
+    .inspector { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden; }
+    .inspector-head { padding: 17px 18px 14px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--ink-500); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 5px 0 0; font-size: 19px; line-height: 1.2; letter-spacing: -.02em; }
+    .inspector-scroll { min-height: 0; overflow: auto; padding: 15px 18px; }
+    .section { padding-bottom: 17px; margin-bottom: 17px; border-bottom: 1px solid var(--line); }
+    .section:last-child { border-bottom: 0; margin-bottom: 0; }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-weight: 800; font-size: 12px; }
+    .section-title small { color: var(--ink-500); font-weight: 500; }
+    .class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .class-btn { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink-800); padding: 10px; cursor: pointer; text-align: left; }
+    .class-btn:hover { border-color: var(--ink-500); }
+    .class-btn.active { border: 2px solid var(--ink-950); background: var(--lime-wash); padding: 9px; }
+    .class-btn.active::after { content: "✓"; position: absolute; top: 8px; right: 8px; color: var(--lime-deep); font-weight: 900; }
+    .class-key { color: var(--ink-500); font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .class-name { font-weight: 800; }
+    .tool-list { display: grid; gap: 6px; }
+    .tool { display: flex; align-items: center; justify-content: space-between; width: 100%; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink-800); cursor: pointer; padding: 8px 9px; text-align: left; }
+    .tool:hover { background: var(--paper); }
+    .tool.active { color: var(--ink-950); border-color: var(--ink-950); background: var(--lime-wash); font-weight: 800; }
+    .tool-left { display: flex; align-items: center; gap: 9px; }
+    .tool-icon { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 4px; font-weight: 900; font-size: 12px; }
+    .tool-key { color: var(--ink-500); font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .data-table { display: grid; gap: 7px; }
+    .data-row { display: flex; justify-content: space-between; gap: 10px; color: var(--ink-500); font-size: 12px; }
+    .data-row b { color: var(--ink-800); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; }
+    .confidence { display: flex; align-items: center; gap: 8px; }
+    .confidence-bar { height: 5px; flex: 1; max-width: 120px; background: var(--line); border-radius: 2px; overflow: hidden; }
+    .confidence-bar span { display: block; width: 96%; height: 100%; background: var(--lime-deep); }
+    .inspector-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 13px 18px 15px; border-top: 1px solid var(--line); }
+    .btn { min-height: 36px; border: 1px solid var(--ink-800); border-radius: 5px; background: var(--surface); color: var(--ink-800); cursor: pointer; font-weight: 800; }
+    .btn:hover { background: var(--paper); }
+    .btn.primary { border-color: var(--ink-950); background: var(--ink-950); color: var(--paper); }
+    .btn.primary:hover { background: var(--ink-800); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn .button-key { margin-left: 7px; color: var(--ink-300); font: 700 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .btn:not(.primary) .button-key { color: var(--ink-500); }
+
+    .toast { position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 18px); padding: 10px 14px; border-radius: 5px; color: var(--paper); background: var(--ink-950); box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .16s ease-out, transform .16s ease-out; font-size: 12px; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .shortcuts { position: fixed; top: 57px; right: 18px; width: 225px; padding: 13px; color: var(--paper); background: var(--ink-900); border: 1px solid var(--ink-500); border-radius: 6px; box-shadow: var(--shadow); opacity: 0; transform: translateY(-5px); pointer-events: none; transition: .15s ease-out; z-index: 5; }
+    .shortcuts.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .shortcut-row { display: flex; justify-content: space-between; padding: 5px 0; color: var(--ink-300); }
+    .shortcut-row b { color: var(--lime); font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .app { min-height: 100vh; }
+      .topbar { padding: 0 14px; }
+      .top-center { display: none; }
+      .workspace { grid-template-columns: 1fr; grid-template-rows: minmax(500px, 65vh) auto; padding: 10px; }
+      .inspector { min-height: 500px; }
+      .inspector-scroll { overflow: visible; }
+      .brand { min-width: 0; }
+      .brand-context { display: none; }
+      .save-state { display: none; }
+    }
+    @media (max-width: 560px) {
+      .brand-name { font-size: 11px; }
+      .workspace { grid-template-rows: 56vh auto; }
+      .canvas-head { padding-left: 12px; }
+      .file-meta { display: none; }
+      .class-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span class="brand-name">ANNOTATE</span>
+        <span class="brand-context">/ label workbench</span>
+      </div>
+      <div class="top-center" aria-label="Keyboard hint">Designed for flow <span class="kbd">?</span> shortcuts</div>
+      <div class="top-actions">
+        <div class="save-state" aria-live="polite"><i class="save-dot" id="saveDot"></i><span id="saveText">All changes saved</span></div>
+        <button class="plain-top" id="helpButton" aria-label="Show keyboard shortcuts" aria-expanded="false">?</button>
+      </div>
+    </header>
+
+    <section class="workspace" aria-label="Annotation workspace">
+      <section class="panel canvas-panel" aria-label="Image canvas">
+        <div class="canvas-head">
+          <div class="file-title">
+            <strong id="imageName">street_003.jpg</strong>
+            <span class="file-meta">1280 × 720 · RGB</span>
+            <span class="live-chip"><i></i> Labeling</span>
+          </div>
+          <div class="view-actions">
+            <button class="icon-btn" id="fitButton" title="Fit canvas">Fit</button>
+            <button class="icon-btn" id="gridButton" title="Toggle guide grid" aria-pressed="false">Grid</button>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <div class="artboard" id="artboard" role="application" aria-label="Interactive street image. Choose a tool then click to annotate.">
+            <svg id="scene" viewBox="0 0 1120 660" role="img" aria-label="Street scene with a car, person and bicycle">
+              <rect width="1120" height="660" fill="var(--canvas-sky)" />
+              <rect y="335" width="1120" height="325" fill="var(--canvas-ground)" />
+              <path d="M0 390 L1120 366 L1120 660 L0 660Z" fill="var(--canvas-road)" />
+              <path d="M0 442 L1120 426" stroke="var(--canvas-road-light)" stroke-width="5" opacity=".7" />
+              <path d="M60 594 L213 590 M310 579 L444 575 M700 560 L827 557 M930 550 L1080 548" stroke="var(--canvas-mark)" stroke-width="8" stroke-linecap="round" opacity=".82" />
+              <g opacity=".96">
+                <rect x="43" y="159" width="174" height="224" fill="var(--building-a)" /><rect x="63" y="184" width="38" height="48" fill="var(--window)" /><rect x="119" y="184" width="39" height="48" fill="var(--window)" /><rect x="176" y="184" width="20" height="48" fill="var(--window)" />
+                <rect x="263" y="112" width="235" height="276" fill="var(--building-b)" /><rect x="286" y="146" width="48" height="56" fill="var(--canvas-sky)" /><rect x="357" y="146" width="48" height="56" fill="var(--canvas-sky)" /><rect x="428" y="146" width="48" height="56" fill="var(--canvas-sky)" />
+                <rect x="809" y="140" width="260" height="251" fill="var(--building-c)" /><rect x="835" y="174" width="53" height="59" fill="var(--canvas-sky)" /><rect x="920" y="174" width="53" height="59" fill="var(--canvas-sky)" /><rect x="1005" y="174" width="38" height="59" fill="var(--canvas-sky)" />
+              </g>
+              <g fill="var(--tree)"><circle cx="676" cy="284" r="82" /><circle cx="752" cy="300" r="63" /><rect x="701" y="306" width="24" height="88" /></g>
+              <g transform="translate(390 413)"><path d="M22 43 H166 L189 76 H0Z" fill="var(--car-body)" /><path d="M31 43 L55 13 H142 L164 43Z" fill="var(--car-glass)" /><path d="M67 20 H100 V40 H51Z M107 20 H138 L156 40 H107Z" fill="var(--car-window)" /><circle cx="43" cy="79" r="20" fill="var(--wheel)" /><circle cx="154" cy="79" r="20" fill="var(--wheel)" /><rect x="182" y="54" width="10" height="8" fill="var(--amber)" /></g>
+              <g transform="translate(816 332)"><circle cx="32" cy="19" r="15" fill="var(--skin)" /><path d="M17 42 Q31 28 46 43 L59 105 H4Z" fill="var(--danger)" /><path d="M19 98 L10 155 M45 98 L59 155" stroke="var(--figure)" stroke-width="12" stroke-linecap="round" /><path d="M8 54 L-5 91 M49 54 L72 78" stroke="var(--figure)" stroke-width="10" stroke-linecap="round" /></g>
+              <g transform="translate(639 465)" fill="none" stroke="var(--bike)" stroke-width="6"><circle cx="0" cy="63" r="39" /><circle cx="105" cy="63" r="39" /><path d="M0 63 L39 12 L74 63 L0 63 M39 12 L105 63 M39 12 L68 10" /></g>
+              <g id="selection" aria-label="Selected car annotation">
+                <rect id="carBox" class="annotation" x="380" y="398" width="220" height="110" rx="3" />
+                <rect x="380" y="369" width="83" height="29" rx="3" fill="var(--lime)" />
+                <text x="392" y="390" class="annotation-label">car · 0.96</text>
+              </g>
+              <g id="personSelection" opacity=".92">
+                <rect class="annotation secondary" x="804" y="314" width="92" height="185" rx="3" />
+                <rect x="804" y="285" width="105" height="29" rx="3" fill="var(--amber)" />
+                <text x="816" y="306" class="annotation-label">person</text>
+              </g>
+              <g id="pointMark" display="none"><circle id="pointCircle" cx="0" cy="0" r="12" fill="var(--lime)" stroke="var(--ink-950)" stroke-width="3" /></g>
+              <g id="guideGrid" display="none" opacity=".35"><path d="M224 0V660 M448 0V660 M672 0V660 M896 0V660 M0 132H1120 M0 264H1120 M0 396H1120 M0 528H1120" stroke="var(--ink-950)" stroke-width="1" stroke-dasharray="4 8" /></g>
+            </svg>
+            <div class="canvas-hint"><b id="hintKey">B</b><span id="hintText">click to place a box</span><span>·</span><span>Esc to cancel</span></div>
+          </div>
+        </div>
+        <div class="canvas-footer">
+          <span class="coordinates" id="coordinates">x: 380  y: 398  w: 220  h: 110</span>
+          <span class="zoom"><button id="zoomOut" aria-label="Zoom out">−</button><b id="zoomLevel">100%</b><button id="zoomIn" aria-label="Zoom in">+</button></span>
+        </div>
+      </section>
+
+      <aside class="panel inspector" aria-label="Annotation controls">
+        <div class="inspector-head"><div class="eyebrow">Current task · <span id="taskNumber">03 / 20</span></div><h1>Mark objects in the frame</h1></div>
+        <div class="inspector-scroll">
+          <section class="section">
+            <div class="section-title"><span>Class</span><small>1 click to switch</small></div>
+            <div class="class-grid" role="group" aria-label="Choose annotation class">
+              <button class="class-btn active" data-class="car"><span class="class-key">1</span><span class="class-name">Car</span></button>
+              <button class="class-btn" data-class="person"><span class="class-key">2</span><span class="class-name">Person</span></button>
+              <button class="class-btn" data-class="bicycle"><span class="class-key">3</span><span class="class-name">Bike</span></button>
+            </div>
+          </section>
+          <section class="section">
+            <div class="section-title"><span>Tool</span><small>Keyboard ready</small></div>
+            <div class="tool-list" role="group" aria-label="Choose annotation tool">
+              <button class="tool active" data-tool="box"><span class="tool-left"><span class="tool-icon">□</span><span>Bounding box</span></span><span class="tool-key">B</span></button>
+              <button class="tool" data-tool="point"><span class="tool-left"><span class="tool-icon">＋</span><span>Point</span></span><span class="tool-key">P</span></button>
+              <button class="tool" data-tool="select"><span class="tool-left"><span class="tool-icon">↖</span><span>Select</span></span><span class="tool-key">S</span></button>
+            </div>
+          </section>
+          <section class="section">
+            <div class="section-title"><span>Selected annotation</span><small id="selectionState">active</small></div>
+            <div class="data-table">
+              <div class="data-row"><span>Class</span><b id="dataClass">car</b></div>
+              <div class="data-row"><span>Coordinates</span><b id="dataCoords">380, 398</b></div>
+              <div class="data-row"><span>Size</span><b id="dataSize">220 × 110</b></div>
+              <div class="data-row"><span>Confidence</span><span class="confidence"><b>96%</b><i class="confidence-bar"><span></span></i></span></div>
+            </div>
+          </section>
+          <section class="section">
+            <div class="section-title"><span>Progress</span><small>autosave on</small></div>
+            <div class="data-table">
+              <div class="data-row"><span>Labeled in this image</span><b id="labelCount">2</b></div>
+              <div class="data-row"><span>Remaining in queue</span><b id="remaining">17</b></div>
+            </div>
+          </section>
+        </div>
+        <div class="inspector-actions">
+          <button class="btn" id="undoButton" disabled>Undo <span class="button-key">⌘Z</span></button>
+          <button class="btn primary" id="saveButton">Save &amp; next <span class="button-key">⌘S</span></button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="shortcuts" id="shortcuts" aria-hidden="true">
+    <div class="eyebrow" style="color: var(--ink-300); margin-bottom: 5px;">Keyboard shortcuts</div>
+    <div class="shortcut-row"><span>Bounding box</span><b>B</b></div>
+    <div class="shortcut-row"><span>Point tool</span><b>P</b></div>
+    <div class="shortcut-row"><span>Select tool</span><b>S</b></div>
+    <div class="shortcut-row"><span>Undo</span><b>⌘ Z</b></div>
+    <div class="shortcut-row"><span>Save &amp; next</span><b>⌘ S</b></div>
+    <div class="shortcut-row"><span>Queue navigation</span><b>← →</b></div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const scene = document.getElementById('scene');
+      const carBox = document.getElementById('carBox');
+      const pointMark = document.getElementById('pointMark');
+      const pointCircle = document.getElementById('pointCircle');
+      const coordinates = document.getElementById('coordinates');
+      const toast = document.getElementById('toast');
+      const saveText = document.getElementById('saveText');
+      const saveDot = document.getElementById('saveDot');
+      const undoButton = document.getElementById('undoButton');
+      const saveButton = document.getElementById('saveButton');
+      const taskNumber = document.getElementById('taskNumber');
+      const remaining = document.getElementById('remaining');
+      const imageName = document.getElementById('imageName');
+      const dataClass = document.getElementById('dataClass');
+      const dataCoords = document.getElementById('dataCoords');
+      const dataSize = document.getElementById('dataSize');
+      const labelCount = document.getElementById('labelCount');
+      const hintKey = document.getElementById('hintKey');
+      const hintText = document.getElementById('hintText');
+      let tool = 'box';
+      let activeClass = 'car';
+      let queue = 3;
+      let zoom = 100;
+      let history = [];
+      let toastTimer;
+
+      const announce = (message) => {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+      };
+      const snapshot = () => ({ x: +carBox.getAttribute('x'), y: +carBox.getAttribute('y'), point: pointMark.getAttribute('display') !== 'none', px: +pointCircle.getAttribute('cx'), py: +pointCircle.getAttribute('cy') });
+      const pushHistory = () => { history.push(snapshot()); undoButton.disabled = false; if (history.length > 12) history.shift(); };
+      const restore = (state) => { carBox.setAttribute('x', state.x); carBox.setAttribute('y', state.y); pointCircle.setAttribute('cx', state.px); pointCircle.setAttribute('cy', state.py); pointMark.setAttribute('display', state.point ? 'block' : 'none'); updateData(); };
+      const updateData = () => {
+        const x = +carBox.getAttribute('x'), y = +carBox.getAttribute('y');
+        coordinates.textContent = `x: ${x}  y: ${y}  w: 220  h: 110`;
+        dataClass.textContent = activeClass;
+        dataCoords.textContent = `${x}, ${y}`;
+        dataSize.textContent = '220 × 110';
+        labelCount.textContent = pointMark.getAttribute('display') === 'none' ? '2' : '3';
+      };
+      const setTool = (next) => {
+        tool = next;
+        document.querySelectorAll('.tool').forEach(button => button.classList.toggle('active', button.dataset.tool === next));
+        const labels = { box: ['B', 'click to place a box'], point: ['P', 'click to place a point'], select: ['S', 'click an annotation to select'] };
+        hintKey.textContent = labels[next][0]; hintText.textContent = labels[next][1];
+        announce(`${labels[next][1].replace('click to ', '').replace('click an annotation to ', '')}`);
+      };
+      const setClass = (next) => {
+        activeClass = next;
+        document.querySelectorAll('.class-btn').forEach(button => button.classList.toggle('active', button.dataset.class === next));
+        document.querySelector('#selection rect:nth-child(2)').setAttribute('fill', next === 'person' ? 'var(--amber)' : 'var(--lime)');
+        document.querySelector('#selection text').textContent = `${next} · 0.96`;
+        updateData(); announce(`Class set to ${next}`);
+      };
+      const canvasPoint = (event) => { const rect = scene.getBoundingClientRect(); return { x: Math.round((event.clientX - rect.left) * 1120 / rect.width), y: Math.round((event.clientY - rect.top) * 660 / rect.height) }; };
+      scene.addEventListener('click', (event) => {
+        const p = canvasPoint(event);
+        if (tool === 'box') { pushHistory(); carBox.setAttribute('x', Math.max(8, Math.min(892, p.x - 110))); carBox.setAttribute('y', Math.max(8, Math.min(542, p.y - 55))); updateData(); saveText.textContent = 'Unsaved changes'; saveDot.style.background = 'var(--amber)'; announce('Bounding box placed'); }
+        if (tool === 'point') { pushHistory(); pointCircle.setAttribute('cx', p.x); pointCircle.setAttribute('cy', p.y); pointMark.setAttribute('display', 'block'); saveText.textContent = 'Unsaved changes'; saveDot.style.background = 'var(--amber)'; announce('Point placed'); }
+        if (tool === 'select') { announce('Annotation selected'); }
+      });
+      document.querySelectorAll('.tool').forEach(button => button.addEventListener('click', () => setTool(button.dataset.tool)));
+      document.querySelectorAll('.class-btn').forEach(button => button.addEventListener('click', () => setClass(button.dataset.class)));
+      undoButton.addEventListener('click', () => { if (!history.length) return; restore(history.pop()); undoButton.disabled = !history.length; saveText.textContent = 'Unsaved changes'; saveDot.style.background = 'var(--amber)'; announce('Last action undone'); });
+      saveButton.addEventListener('click', () => { saveText.textContent = 'Saved just now'; saveDot.style.background = 'var(--lime)'; announce(`Image ${String(queue).padStart(2, '0')} saved`); if (queue < 20) { queue++; taskNumber.textContent = `${String(queue).padStart(2, '0')} / 20`; remaining.textContent = 20 - queue; imageName.textContent = `street_${String(queue).padStart(3, '0')}.jpg`; history = []; undoButton.disabled = true; } });
+      document.getElementById('gridButton').addEventListener('click', (event) => { const grid = document.getElementById('guideGrid'); const on = grid.getAttribute('display') !== 'none'; grid.setAttribute('display', on ? 'none' : 'block'); event.currentTarget.setAttribute('aria-pressed', String(!on)); announce(on ? 'Guide grid hidden' : 'Guide grid shown'); });
+      document.getElementById('fitButton').addEventListener('click', () => announce('Canvas fitted to view'));
+      document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math.max(50, zoom - 10); document.getElementById('zoomLevel').textContent = `${zoom}%`; announce(`Zoom ${zoom}%`); });
+      document.getElementById('zoomIn').addEventListener('click', () => { zoom = Math.min(150, zoom + 10); document.getElementById('zoomLevel').textContent = `${zoom}%`; announce(`Zoom ${zoom}%`); });
+      const shortcuts = document.getElementById('shortcuts');
+      document.getElementById('helpButton').addEventListener('click', (event) => { const open = shortcuts.classList.toggle('open'); event.currentTarget.setAttribute('aria-expanded', String(open)); shortcuts.setAttribute('aria-hidden', String(!open)); });
+      document.addEventListener('keydown', (event) => {
+        if (event.target.matches('input, textarea')) return;
+        const key = event.key.toLowerCase();
+        if (event.metaKey && key === 'z' || event.ctrlKey && key === 'z') { event.preventDefault(); undoButton.click(); return; }
+        if (event.metaKey && key === 's' || event.ctrlKey && key === 's') { event.preventDefault(); saveButton.click(); return; }
+        if (key === 'b' || key === 'p' || key === 's') { setTool({ b: 'box', p: 'point', s: 'select' }[key]); return; }
+        if (key === '1' || key === '2' || key === '3') setClass(['car', 'person', 'bicycle'][+key - 1]);
+        if (event.key === 'Escape') shortcuts.classList.remove('open');
+        if (event.key === 'ArrowRight' && queue < 20) saveButton.click();
+        if (event.key === 'ArrowLeft' && queue > 1) { queue--; taskNumber.textContent = `${String(queue).padStart(2, '0')} / 20`; remaining.textContent = 20 - queue; imageName.textContent = `street_${String(queue).padStart(3, '0')}.jpg`; announce('Previous image'); }
+      });
+      updateData();
+    })();
+  </script>
+</body>
+</html>

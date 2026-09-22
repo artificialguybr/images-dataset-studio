@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "images-dataset-studio": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "backend.mcp_server"],
+      "cwd": "/absolute/path/to/images-dataset-studio",
+      "env": {
+        "IDS_API_URL": "http://127.0.0.1:8766"
+      }
+    }
+  }
+}

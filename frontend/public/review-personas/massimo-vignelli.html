@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Review / Issues — Vignelli</title>
+  <style>
+    :root {
+      --paper: #f5f5f2;
+      --white: #fbfbf9;
+      --ink: #11110f;
+      --muted: #696963;
+      --line: #c9c9c3;
+      --soft-line: #dfdfda;
+      --red: #d71920;
+      --red-dark: #af1016;
+      --wash: #e9e9e4;
+      --green: #216b45;
+      --yellow: #d9b328;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      letter-spacing: .015em;
+    }
+    button { font: inherit; }
+
+    .page {
+      display: grid;
+      grid-template-rows: 72px minmax(0, 1fr) 34px;
+      height: 100vh;
+      min-height: 650px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr) 290px;
+      align-items: stretch;
+      border-bottom: 1px solid var(--ink);
+      background: var(--paper);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      border-right: 1px solid var(--ink);
+    }
+    .brand-mark {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      background: var(--red);
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      width: 8px;
+      height: 18px;
+      border-left: 2px solid var(--white);
+      border-right: 2px solid var(--white);
+    }
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .brand-sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .topnav {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      padding: 0 30px;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: .16em;
+    }
+    .topnav span { color: var(--muted); }
+    .topnav .current {
+      color: var(--ink);
+      font-weight: 700;
+      position: relative;
+    }
+    .topnav .current::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -26px;
+      height: 3px;
+      background: var(--red);
+    }
+    .run-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-left: 1px solid var(--ink);
+    }
+    .run-meta > div { padding: 15px 20px 12px; }
+    .run-meta > div + div { border-left: 1px solid var(--line); }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .17em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .run-value {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .run-value.mono, .mono { font-family: "SFMono-Regular", Consolas, monospace; letter-spacing: 0; }
+
+    .main {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr) 310px;
+      min-height: 0;
+    }
+    .rail, .decision { min-height: 0; overflow: hidden; }
+    .rail {
+      display: flex;
+      flex-direction: column;
+      padding: 26px 24px 18px;
+      border-right: 1px solid var(--ink);
+    }
+    .issue-index {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 7px solid var(--red);
+      padding-bottom: 12px;
+    }
+    .issue-number {
+      font-size: 68px;
+      font-weight: 700;
+      letter-spacing: -.08em;
+      line-height: .78;
+    }
+    .issue-count {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .rail h1 {
+      max-width: 190px;
+      margin: 22px 0 10px;
+      font-size: 26px;
+      line-height: .98;
+      letter-spacing: -.04em;
+      text-transform: uppercase;
+    }
+    .rail-copy {
+      max-width: 186px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .alert-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 8px 10px;
+      width: max-content;
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+    .dot { width: 7px; height: 7px; display: inline-block; background: var(--red); border-radius: 50%; }
+    .dataset {
+      margin-top: auto;
+      border-top: 1px solid var(--ink);
+      padding-top: 14px;
+    }
+    .dataset-name {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .dataset-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 12px;
+      margin-top: 10px;
+      border-top: 1px solid var(--soft-line);
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .dataset-row b { color: var(--ink); font-weight: 700; }
+
+    .workspace {
+      position: relative;
+      display: grid;
+      grid-template-rows: 92px minmax(0, 1fr) 133px;
+      min-width: 0;
+      min-height: 0;
+      background-color: var(--paper);
+      background-image: linear-gradient(to right, transparent calc(25% - .5px), var(--soft-line) 25%, transparent calc(25% + .5px)), linear-gradient(to right, transparent calc(50% - .5px), var(--soft-line) 50%, transparent calc(50% + .5px)), linear-gradient(to right, transparent calc(75% - .5px), var(--soft-line) 75%, transparent calc(75% + .5px));
+    }
+    .workspace-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: end;
+      border-bottom: 1px solid var(--ink);
+      padding: 0 28px 19px;
+    }
+    .workspace-title {
+      margin: 8px 0 0;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -.035em;
+      text-transform: uppercase;
+    }
+    .head-note {
+      align-self: end;
+      padding-left: 24px;
+      border-left: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+    .head-ref {
+      align-self: end;
+      text-align: right;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+    .head-ref strong { color: var(--ink); }
+
+    .evidence {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 182px;
+      gap: 24px;
+      min-height: 0;
+      padding: 24px 28px 20px;
+    }
+    .evidence-figure {
+      display: grid;
+      grid-template-rows: 30px minmax(0, 1fr) 28px;
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--ink);
+      background: var(--white);
+    }
+    .figure-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--ink);
+      padding: 0 12px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .figure-label span:last-child { color: var(--red); }
+    .broken-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      overflow: hidden;
+      background-color: #e3e3df;
+      background-image: linear-gradient(135deg, transparent 49.7%, rgba(17,17,15,.12) 50%, transparent 50.3%), linear-gradient(45deg, transparent 49.7%, rgba(17,17,15,.12) 50%, transparent 50.3%);
+      background-size: 28px 28px;
+    }
+    .broken-stage::before, .broken-stage::after {
+      content: "";
+      position: absolute;
+      background: var(--red);
+    }
+    .broken-stage::before { left: 0; right: 0; top: 50%; height: 1px; opacity: .65; }
+    .broken-stage::after { top: 0; bottom: 0; left: 50%; width: 1px; opacity: .65; }
+    .broken-card {
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 190px;
+      height: 130px;
+      border: 1px solid var(--red);
+      background: rgba(245,245,242,.85);
+      text-align: center;
+    }
+    .broken-icon {
+      position: relative;
+      width: 38px;
+      height: 46px;
+      margin-bottom: 9px;
+      border: 2px solid var(--ink);
+      background: var(--paper);
+    }
+    .broken-icon::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 12px;
+      width: 19px;
+      height: 2px;
+      background: var(--red);
+      box-shadow: 0 7px 0 var(--ink), 0 14px 0 var(--ink);
+    }
+    .broken-icon::after {
+      content: "×";
+      position: absolute;
+      right: -10px;
+      top: -13px;
+      color: var(--red);
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .broken-card strong { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .broken-card small { display: block; margin-top: 5px; color: var(--red); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+    .figure-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      border-top: 1px solid var(--ink);
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .figure-foot strong { color: var(--ink); }
+
+    .evidence-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .meta-title {
+      margin-bottom: 11px;
+      padding-bottom: 10px;
+      border-bottom: 7px solid var(--ink);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .meta-block { padding: 0 0 13px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+    .meta-key { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .meta-value { margin-top: 5px; font-size: 14px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+    .meta-value.red { color: var(--red); }
+    .meta-detail { margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.3; }
+    .hash { font-size: 10px; font-weight: 400; }
+
+    .examples {
+      display: grid;
+      grid-template-columns: 155px 1fr 1fr;
+      gap: 14px;
+      min-height: 0;
+      padding: 16px 28px 15px;
+      border-top: 1px solid var(--ink);
+    }
+    .examples-intro { padding-top: 3px; }
+    .examples-intro h2 { margin: 8px 0 0; font-size: 17px; letter-spacing: -.03em; text-transform: uppercase; }
+    .examples-intro p { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.3; }
+    .example {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: var(--white);
+    }
+    .example-thumb {
+      position: relative;
+      overflow: hidden;
+      background: #d8d8d3;
+    }
+    .example-thumb::before { content: ""; position: absolute; left: 13px; right: 13px; top: 15px; bottom: 15px; border: 1px solid var(--ink); }
+    .example-thumb::after { content: ""; position: absolute; width: 28px; height: 28px; left: 29px; top: 24px; border: 6px solid var(--red); border-radius: 50%; opacity: .8; }
+    .example-thumb.pass { background: #bcc6b9; }
+    .example-thumb.pass::after { border-color: var(--green); }
+    .example-copy { min-width: 0; padding: 10px 11px; }
+    .example-copy strong { display: block; font-size: 11px; line-height: 1.05; overflow-wrap: anywhere; }
+    .example-copy p { margin: 6px 0 0; color: var(--muted); font-size: 9px; line-height: 1.25; }
+    .example-status { display: block; margin-top: 7px; color: var(--green); font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .example-status.alert { color: var(--red); }
+
+    .decision {
+      display: grid;
+      grid-template-rows: 180px 1fr 174px;
+      border-left: 1px solid var(--ink);
+      background: var(--white);
+    }
+    .score {
+      display: grid;
+      grid-template-columns: 1fr 108px;
+      gap: 12px;
+      padding: 25px 24px 18px;
+      border-bottom: 1px solid var(--ink);
+    }
+    .score h2 { margin: 10px 0 0; font-size: 18px; line-height: 1; letter-spacing: -.03em; text-transform: uppercase; }
+    .score p { margin: 9px 0 0; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .score-number { align-self: center; text-align: right; font-size: 57px; font-weight: 700; letter-spacing: -.09em; line-height: .8; }
+    .score-number span { display: block; margin-top: 10px; color: var(--muted); font-size: 9px; letter-spacing: .15em; line-height: 1; text-transform: uppercase; }
+    .metrics { padding: 22px 24px 18px; }
+    .metrics h2 { margin: 0 0 17px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+    .metric { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 10px; padding: 11px 0 9px; border-top: 1px solid var(--line); }
+    .metric label { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+    .metric b { font-size: 13px; text-align: right; }
+    .metric b.red { color: var(--red); }
+    .metric b.green { color: var(--green); }
+    .decision-box { padding: 18px 24px 20px; border-top: 7px solid var(--red); background: #f0f0ec; }
+    .decision-box h2 { margin: 0; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+    .recommendation { margin-top: 8px; font-size: 22px; font-weight: 700; letter-spacing: -.04em; line-height: 1; text-transform: uppercase; }
+    .decision-state { min-height: 15px; margin-top: 7px; color: var(--muted); font-size: 10px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 14px; }
+    .action {
+      height: 30px;
+      border: 1px solid var(--ink);
+      border-radius: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .action:hover, .action:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+    .action.primary { border-color: var(--red); background: var(--red); color: var(--white); }
+    .action.selected { background: var(--ink); color: var(--white); }
+    .decision-hint { margin-top: 9px; color: var(--muted); font-size: 9px; letter-spacing: .03em; }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--ink);
+      padding: 0 24px;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .footer strong { color: var(--ink); }
+    .footer .legend { display: flex; align-items: center; gap: 7px; }
+    .legend .dot { width: 6px; height: 6px; }
+
+    @media (max-width: 1050px) {
+      .topbar, .main { grid-template-columns: 205px minmax(0, 1fr) 265px; }
+      .rail { padding-left: 18px; padding-right: 18px; }
+      .evidence, .workspace-head, .examples { padding-left: 20px; padding-right: 20px; }
+      .evidence { gap: 14px; grid-template-columns: minmax(0, 1fr) 155px; }
+      .topnav { gap: 16px; padding: 0 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar" aria-label="Review header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-name">Review</div>
+          <div class="brand-sub">Issues / image integrity</div>
+        </div>
+      </div>
+      <nav class="topnav" aria-label="Primary navigation">
+        <span>Overview</span>
+        <span class="current">Issues</span>
+        <span>Examples</span>
+        <span>Export</span>
+      </nav>
+      <div class="run-meta">
+        <div>
+          <div class="eyebrow">Open alerts</div>
+          <div class="run-value">01 <span style="color:var(--red)">●</span></div>
+        </div>
+        <div>
+          <div class="eyebrow">Run</div>
+          <div class="run-value mono">#1789003245</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <aside class="rail" aria-label="Issue summary">
+        <div class="issue-index">
+          <div class="issue-number">01</div>
+          <div class="issue-count">of 01</div>
+        </div>
+        <h1>Corrupt<br />file</h1>
+        <p class="rail-copy">The asset is present, but its image stream cannot be decoded. Resolve before it enters the training set.</p>
+        <div class="alert-tag"><span class="dot"></span> Open alert</div>
+        <div class="dataset">
+          <div class="eyebrow">Dataset</div>
+          <div class="dataset-name">yolo-in-1789003245</div>
+          <div class="dataset-row"><span>Queue</span><b>Integrity / 01</b></div>
+          <div class="dataset-row"><span>Priority</span><b style="color:var(--red)">High</b></div>
+        </div>
+      </aside>
+
+      <section class="workspace" aria-label="Evidence and review examples">
+        <div class="workspace-head">
+          <div>
+            <div class="eyebrow">Issue review</div>
+            <h2 class="workspace-title">Evidence</h2>
+          </div>
+          <div class="head-note">One file flagged by the integrity<br />detector. No visual pixels recovered.</div>
+          <div class="head-ref"><strong>Asset 0001</strong><br /><span class="mono">frame_0001.jpg</span></div>
+        </div>
+
+        <div class="evidence">
+          <div class="evidence-figure" aria-label="Corrupt image evidence">
+            <div class="figure-label"><span>Primary evidence / file content</span><span>Unreadable</span></div>
+            <div class="broken-stage">
+              <div class="broken-card">
+                <div>
+                  <div class="broken-icon" aria-hidden="true"></div>
+                  <strong>Image unavailable</strong>
+                  <small>Decode failed</small>
+                </div>
+              </div>
+            </div>
+            <div class="figure-foot"><span><strong>Corrupt file</strong> · pixels withheld</span><span class="mono">JPEG / ?</span></div>
+          </div>
+          <div class="evidence-meta">
+            <div class="meta-title">File report</div>
+            <div class="meta-block">
+              <div class="meta-key">Detector</div>
+              <div class="meta-value">pillow-verify</div>
+              <div class="meta-detail">Pillow could not verify the image stream.</div>
+            </div>
+            <div class="meta-block">
+              <div class="meta-key">Failure</div>
+              <div class="meta-value red">Decode error</div>
+              <div class="meta-detail">Header or payload is incomplete.</div>
+            </div>
+            <div class="meta-block">
+              <div class="meta-key">Object</div>
+              <div class="meta-value mono hash">frame_0001.jpg</div>
+              <div class="meta-detail">No replacement attached.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="examples" aria-label="Review examples">
+          <div class="examples-intro">
+            <div class="eyebrow">Reference set</div>
+            <h2>Review<br />examples</h2>
+            <p>Compare neighboring outcomes before deciding.</p>
+          </div>
+          <article class="example">
+            <div class="example-thumb pass" aria-hidden="true"></div>
+            <div class="example-copy">
+              <strong>frame_0000.jpg</strong>
+              <p>Decodable image with intact metadata.</p>
+              <span class="example-status">Pass · retain</span>
+            </div>
+          </article>
+          <article class="example">
+            <div class="example-thumb" aria-hidden="true"></div>
+            <div class="example-copy">
+              <strong>frame_0002.jpg</strong>
+              <p>Same batch, awaiting integrity review.</p>
+              <span class="example-status alert">Open · inspect</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="decision" aria-label="Metrics and decision">
+        <section class="score">
+          <div>
+            <div class="eyebrow">Integrity score</div>
+            <h2>Unusable<br />asset</h2>
+            <p>Score is decisive: a verified decode is required for review.</p>
+          </div>
+          <div class="score-number">1.00<span>severity</span></div>
+        </section>
+        <section class="metrics">
+          <h2>Detector metrics</h2>
+          <div class="metric"><label>Confidence</label><b>98%</b></div>
+          <div class="metric"><label>Pixel access</label><b class="red">Blocked</b></div>
+          <div class="metric"><label>File state</label><b class="red">Corrupt</b></div>
+          <div class="metric"><label>Detector</label><b class="mono">pillow-verify</b></div>
+          <div class="metric"><label>Batch alerts</label><b>01 / 01</b></div>
+        </section>
+        <section class="decision-box">
+          <h2>Recommendation</h2>
+          <div class="recommendation">Quarantine</div>
+          <div class="decision-state" id="decisionState">Suggested action · remove from training set</div>
+          <div class="actions" role="group" aria-label="Choose issue action">
+            <button class="action primary" type="button" data-action="quarantine">Quarantine</button>
+            <button class="action" type="button" data-action="release">Release</button>
+            <button class="action" type="button" data-action="skip">Skip</button>
+          </div>
+          <div class="decision-hint">Keys: <span class="mono">Q</span> quarantine · <span class="mono">R</span> release · <span class="mono">S</span> skip</div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <span><strong>Review / Issues</strong> &nbsp;·&nbsp; integrity pass 04</span>
+      <span class="legend"><span class="dot"></span> attention required</span>
+      <span class="mono">12 columns · 01 open alert</span>
+    </footer>
+  </div>
+  <script>
+    const state = document.querySelector('#decisionState');
+    const buttons = [...document.querySelectorAll('[data-action]')];
+    const labels = { quarantine: 'Selected · remove from training set', release: 'Selected · return to dataset', skip: 'Deferred · keep alert open' };
+    function choose(action) {
+      buttons.forEach(button => button.classList.toggle('selected', button.dataset.action === action));
+      state.textContent = labels[action];
+    }
+    buttons.forEach(button => button.addEventListener('click', () => choose(button.dataset.action)));
+    document.addEventListener('keydown', event => {
+      const key = event.key.toLowerCase();
+      if (key === 'q' || key === 'r' || key === 's') choose({ q: 'quarantine', r: 'release', s: 'skip' }[key]);
+    });
+  </script>
+</body>
+</html>

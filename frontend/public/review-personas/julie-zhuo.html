@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Review / Issues — Decision room</title>
+<style>
+  :root {
+    --ink: #202b46;
+    --muted: #6d7690;
+    --line: #dfe3eb;
+    --paper: #ffffff;
+    --wash: #f5f6f9;
+    --blue: #4257c8;
+    --blue-dark: #3345a8;
+    --blue-pale: #eef1ff;
+    --coral: #e97967;
+    --coral-pale: #fff1ee;
+    --gold: #b77b29;
+    --gold-pale: #fff7e9;
+    --green: #277a64;
+    --green-pale: #e9f6f0;
+    --shadow: 0 12px 30px rgba(34, 45, 78, .07);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    background: var(--wash);
+    color: var(--ink);
+    font: 13px/1.4 Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  .app { height: 100vh; display: flex; flex-direction: column; min-width: 1100px; }
+  .topbar {
+    height: 68px; flex: none; display: flex; align-items: center; gap: 26px;
+    padding: 0 34px; background: var(--paper); border-bottom: 1px solid var(--line);
+  }
+  .mark { width: 29px; height: 29px; display: grid; place-items: center; border-radius: 9px; color: #fff; background: var(--blue); font-weight: 800; font-size: 14px; letter-spacing: -.04em; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 760; font-size: 14px; letter-spacing: -.02em; }
+  .crumb { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
+  .crumb strong { color: var(--ink); font-weight: 650; }
+  .slash { color: #bdc2cf; }
+  .top-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+  .sync { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 7px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #46a685; }
+  .icon-btn { border: 0; background: transparent; color: var(--muted); font-size: 17px; padding: 5px; }
+  .avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 11px; background: #dc866c; border: 2px solid #fff; box-shadow: 0 0 0 1px #e5e7ec; }
+  .workspace { min-height: 0; flex: 1; display: flex; }
+  .rail { width: 236px; flex: none; background: #fbfbfd; border-right: 1px solid var(--line); padding: 24px 18px 19px; display: flex; flex-direction: column; }
+  .rail-label { color: #979eb0; text-transform: uppercase; letter-spacing: .12em; font-size: 10px; font-weight: 760; margin: 0 11px 14px; }
+  .collection { display: flex; align-items: center; gap: 9px; padding: 9px 11px; margin-bottom: 18px; border-radius: 8px; color: var(--ink); font-size: 12px; font-weight: 650; background: #f0f2fa; }
+  .collection .folder { color: var(--blue); font-size: 14px; }
+  .issue-list { display: grid; gap: 4px; }
+  .issue {
+    display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 6px;
+    border: 0; text-align: left; padding: 11px 10px; border-radius: 8px; color: var(--muted); background: transparent;
+  }
+  .issue:hover { background: #f1f3f8; }
+  .issue.active { color: var(--ink); background: var(--paper); box-shadow: 0 2px 7px rgba(32,43,70,.05); }
+  .issue-icon { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #a95a4c; background: #ffe0db; }
+  .issue-copy { min-width: 0; }
+  .issue-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 650; font-size: 12px; }
+  .issue-sub { color: #9da4b4; font-size: 10px; margin-top: 1px; }
+  .issue-count { color: #b55e4d; background: #fff0ec; border-radius: 9px; padding: 2px 6px; font-weight: 760; font-size: 10px; }
+  .rail-note { margin-top: auto; padding: 14px 12px; border: 1px solid #e5e7ee; border-radius: 10px; background: #fff; }
+  .rail-note h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: .01em; }
+  .rail-note p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+  .rail-note b { color: var(--ink); }
+  .main { min-width: 0; flex: 1; padding: 25px 31px 21px; display: flex; flex-direction: column; gap: 18px; }
+  .main-heading { display: flex; justify-content: space-between; align-items: end; flex: none; }
+  .eyebrow { color: var(--blue); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 800; }
+  h1 { font-size: 26px; letter-spacing: -.045em; line-height: 1.1; margin: 5px 0 4px; }
+  .subhead { color: var(--muted); font-size: 12px; margin: 0; }
+  .people { display: flex; align-items: center; gap: 11px; }
+  .face-stack { display: flex; padding-left: 8px; }
+  .face-stack .avatar { margin-left: -8px; }
+  .face-a { background: #d77a65; }
+  .face-b { background: #596dbd; }
+  .face-c { background: #51a58d; }
+  .people-copy { color: var(--muted); font-size: 11px; text-align: right; }
+  .people-copy strong { display: block; color: var(--ink); font-weight: 700; font-size: 12px; }
+  .room { min-height: 0; flex: 1; display: grid; grid-template-columns: minmax(400px, .97fr) minmax(460px, 1.18fr); gap: 18px; }
+  .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; box-shadow: var(--shadow); min-height: 0; }
+  .decision-panel { display: flex; flex-direction: column; padding: 22px 22px 17px; }
+  .panel-kicker { display: flex; justify-content: space-between; align-items: center; margin-bottom: 13px; }
+  .panel-kicker span:first-child { color: var(--muted); font-size: 11px; font-weight: 700; }
+  .status { border-radius: 20px; padding: 5px 9px; font-size: 10px; font-weight: 750; letter-spacing: .03em; }
+  .status.open { color: #a85c4e; background: var(--coral-pale); }
+  .question { font-size: 21px; line-height: 1.2; letter-spacing: -.035em; max-width: 480px; margin: 0 0 7px; }
+  .question-note { color: var(--muted); font-size: 12px; margin: 0 0 17px; }
+  .owner-row { display: flex; align-items: center; gap: 9px; padding: 10px 11px; background: #f8f8fb; border-radius: 8px; margin-bottom: 19px; }
+  .owner-row .avatar { width: 24px; height: 24px; font-size: 9px; }
+  .owner-row span { color: var(--muted); font-size: 11px; }
+  .owner-row b { color: var(--ink); }
+  .owner-row .due { margin-left: auto; color: var(--gold); font-weight: 700; }
+  .choice-label { color: var(--muted); text-transform: uppercase; letter-spacing: .1em; font-size: 10px; font-weight: 800; margin: 0 0 8px; }
+  .choices { display: grid; gap: 7px; }
+  .choice { position: relative; display: flex; gap: 11px; align-items: flex-start; border: 1px solid var(--line); border-radius: 9px; padding: 12px 12px 11px; transition: border .15s, background .15s; }
+  .choice:has(input:checked) { border-color: var(--blue); background: var(--blue-pale); }
+  .choice input { appearance: none; margin: 2px 0 0; flex: none; width: 15px; height: 15px; border: 1px solid #bac1d2; border-radius: 50%; background: #fff; }
+  .choice input:checked { border: 4px solid var(--blue); }
+  .choice strong { display: block; font-size: 12px; margin-bottom: 2px; }
+  .choice small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+  .decision-footer { margin-top: auto; padding-top: 17px; border-top: 1px solid #edf0f4; }
+  .decision-footer p { margin: 0 0 10px; color: var(--muted); font-size: 11px; }
+  .decision-footer p b { color: var(--ink); }
+  .primary { border: 0; width: 100%; border-radius: 8px; padding: 11px 14px; color: #fff; background: var(--blue); font-weight: 750; box-shadow: 0 3px 0 var(--blue-dark); }
+  .primary:hover { background: var(--blue-dark); }
+  .secondary { border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; color: var(--ink); background: #fff; font-weight: 650; }
+  .secondary:hover { background: #f6f7fb; }
+  .evidence-panel { padding: 20px 20px 16px; display: flex; flex-direction: column; min-width: 0; }
+  .evidence-top { display: flex; align-items: start; justify-content: space-between; margin-bottom: 13px; }
+  .evidence-top h2 { margin: 0; font-size: 15px; letter-spacing: -.02em; }
+  .evidence-top p { color: var(--muted); font-size: 11px; margin: 3px 0 0; }
+  .file-chip { display: flex; align-items: center; gap: 7px; border: 1px solid #f0c2b9; border-radius: 7px; color: #a95a4c; background: var(--coral-pale); padding: 6px 8px; font-size: 10px; font-weight: 760; }
+  .file-chip .x { font-weight: 900; font-size: 12px; }
+  .evidence-grid { min-height: 0; display: grid; grid-template-columns: minmax(190px, .92fr) minmax(235px, 1.1fr); gap: 15px; }
+  .preview { min-height: 0; border: 1px solid #e9c4bd; border-radius: 9px; background: #fff7f5; display: flex; flex-direction: column; overflow: hidden; }
+  .preview-canvas { min-height: 176px; flex: 1; position: relative; display: grid; place-items: center; background-color: #f9e6e2; background-image: linear-gradient(45deg, #f4d5d0 25%, transparent 25%), linear-gradient(-45deg, #f4d5d0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f4d5d0 75%), linear-gradient(-45deg, transparent 75%, #f4d5d0 75%); background-size: 22px 22px; background-position: 0 0, 0 11px, 11px -11px, -11px 0; }
+  .broken { width: 88px; height: 76px; border: 2px solid #c36d60; border-radius: 6px; background: rgba(255,249,247,.88); display: grid; place-items: center; position: relative; color: #c36d60; }
+  .broken:before { content: ""; position: absolute; left: 9px; right: 9px; top: 27px; border-top: 2px dashed #c36d60; transform: rotate(-28deg); }
+  .broken span { font-size: 28px; font-weight: 300; transform: translateY(-2px); }
+  .preview-caption { display: flex; justify-content: space-between; gap: 8px; padding: 9px 10px 10px; background: #fff; border-top: 1px solid #efd5d0; }
+  .preview-caption strong { font-size: 11px; }
+  .preview-caption small { display: block; color: var(--muted); font-size: 10px; margin-top: 1px; }
+  .preview-caption .mono { color: #a95a4c; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .facts { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .fact { border-bottom: 1px solid #edf0f4; padding: 0 0 9px; display: grid; grid-template-columns: 98px 1fr; gap: 9px; align-items: baseline; }
+  .fact:last-child { border-bottom: 0; }
+  .fact dt { color: var(--muted); font-size: 10px; }
+  .fact dd { margin: 0; color: var(--ink); font-size: 11px; font-weight: 700; min-width: 0; }
+  .fact dd code { color: #55617d; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .score { display: inline-flex; align-items: center; gap: 6px; color: var(--green) !important; }
+  .score b { font-size: 16px; letter-spacing: -.04em; }
+  .recommend { background: var(--gold-pale); border: 1px solid #f0d9aa; padding: 11px 12px; border-radius: 8px; margin-top: auto; }
+  .recommend-head { display: flex; align-items: center; justify-content: space-between; color: var(--gold); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+  .recommend p { color: #74572d; font-size: 11px; margin: 6px 0 0; line-height: 1.4; }
+  .recommend p strong { color: #5d441e; }
+  .below { min-height: 0; flex: none; display: grid; grid-template-columns: minmax(400px, .97fr) minmax(460px, 1.18fr); gap: 18px; height: 166px; }
+  .activity, .examples { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+  .activity { padding: 14px 17px; display: flex; flex-direction: column; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-head h3 { margin: 0; font-size: 12px; letter-spacing: -.01em; }
+  .section-head span { color: var(--muted); font-size: 10px; }
+  .feed { display: grid; gap: 8px; min-height: 0; overflow: hidden; }
+  .feed-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted); }
+  .feed-item .avatar { width: 20px; height: 20px; font-size: 8px; flex: none; }
+  .feed-item strong { color: var(--ink); }
+  .feed-item time { margin-left: auto; color: #a7adbc; white-space: nowrap; }
+  .comment { display: flex; gap: 7px; margin-top: auto; }
+  .comment input { min-width: 0; flex: 1; border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; outline: none; color: var(--ink); background: #fafbfc; font-size: 11px; }
+  .comment input:focus { border-color: var(--blue); background: #fff; }
+  .comment button { border: 0; border-radius: 7px; padding: 7px 10px; color: var(--blue); background: var(--blue-pale); font-weight: 750; font-size: 11px; }
+  .examples { padding: 14px 17px; min-width: 0; }
+  .example-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+  .example { display: flex; gap: 8px; align-items: center; min-width: 0; border: 1px solid #e5e8ef; border-radius: 8px; padding: 7px; background: #fafbfc; text-align: left; }
+  .example:hover, .example.selected { border-color: #aeb9ed; background: #f3f5ff; }
+  .mini-img { width: 43px; height: 43px; flex: none; border-radius: 5px; background: #dfe2ee; overflow: hidden; position: relative; }
+  .mini-img:before, .mini-img:after { content: ""; position: absolute; border-radius: 50%; }
+  .mini-img:before { width: 18px; height: 18px; background: #8290d0; top: 8px; left: 12px; }
+  .mini-img:after { width: 44px; height: 22px; background: #6373bd; bottom: -7px; left: 0; transform: rotate(-12deg); }
+  .mini-img.bad { background: repeating-linear-gradient(135deg, #f1d2cc 0 5px, #ffeae6 5px 10px); display: grid; place-items: center; color: #bd665a; font-weight: 900; font-size: 14px; }
+  .mini-img.bad:before, .mini-img.bad:after { display: none; }
+  .example-copy { min-width: 0; }
+  .example-copy strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
+  .example-copy small { display: block; color: var(--muted); font-size: 9px; margin-top: 2px; }
+  .toast { position: fixed; right: 28px; bottom: 22px; color: #fff; background: var(--ink); border-radius: 8px; padding: 10px 14px; font-size: 11px; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); pointer-events: none; transition: .2s ease; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  @media (max-width: 1180px) {
+    .main { padding-left: 20px; padding-right: 20px; }
+    .rail { width: 210px; }
+    .room, .below { gap: 12px; }
+    .decision-panel { padding-left: 17px; padding-right: 17px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="mark">r/</div> Review</div>
+    <div class="crumb"><span>Datasets</span><span class="slash">/</span><strong>Issues</strong></div>
+    <div class="top-actions">
+      <div class="sync"><span class="sync-dot"></span>All changes saved</div>
+      <button class="icon-btn" aria-label="Notifications">⌁</button>
+      <div class="avatar face-a" title="You">JZ</div>
+    </div>
+  </header>
+  <div class="workspace">
+    <aside class="rail">
+      <div class="rail-label">Review path</div>
+      <div class="collection"><span class="folder">▱</span> yolo-in-1789003245</div>
+      <div class="rail-label">One open issue</div>
+      <div class="issue-list">
+        <button class="issue active"><span class="issue-icon">!</span><span class="issue-copy"><span class="issue-title">Corrupt file</span><span class="issue-sub">Needs a decision</span></span><span class="issue-count">1</span></button>
+        <button class="issue"><span class="issue-icon" style="color:#377b69;background:#dff2ea">✓</span><span class="issue-copy"><span class="issue-title">Resolved</span><span class="issue-sub">This dataset</span></span><span style="color:#9da4b4;font-size:10px">0</span></button>
+      </div>
+      <div class="rail-note"><h4>What happens next?</h4><p>Choose an outcome, then <b>tell the team why</b>. The decision becomes part of the dataset record.</p></div>
+    </aside>
+    <main class="main">
+      <div class="main-heading">
+        <div><div class="eyebrow">Issue 01 · decision room</div><h1>Make the call together.</h1><p class="subhead">A focused place to turn one alert into a shared next step.</p></div>
+        <div class="people"><div class="face-stack"><div class="avatar face-a">JZ</div><div class="avatar face-b">AM</div><div class="avatar face-c">RK</div></div><div class="people-copy"><strong>3 people in review</strong>Invite someone who knows the data <button class="icon-btn" id="invite" aria-label="Invite reviewer" style="font-size:11px;color:var(--blue)">＋</button></div></div>
+      </div>
+      <section class="room">
+        <article class="panel decision-panel">
+          <div class="panel-kicker"><span>Decision needed from the team</span><span class="status open" id="status">OPEN · 1</span></div>
+          <h2 class="question">Should this file be quarantined before training?</h2>
+          <p class="question-note">The detector found a single file that cannot be opened. Decide its path, not just its label.</p>
+          <div class="owner-row"><div class="avatar face-a">JZ</div><span><b>JZ</b> owns the decision</span><span class="due">Due today</span></div>
+          <p class="choice-label">Choose an outcome</p>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="decision" value="quarantine" checked><span><strong>Quarantine file</strong><small>Keep the rest of the dataset moving; isolate this item for repair.</small></span></label>
+            <label class="choice"><input type="radio" name="decision" value="recheck"><span><strong>Ask for a re-check</strong><small>Run pillow-verify again if the source may be temporarily unavailable.</small></span></label>
+            <label class="choice"><input type="radio" name="decision" value="keep"><span><strong>Keep in review</strong><small>Leave training blocked until someone can inspect the original.</small></span></label>
+          </div>
+          <div class="decision-footer"><p><b>Recommendation:</b> quarantine, unless the source owner can restore the file today.</p><button class="primary" id="record">Record quarantine decision →</button></div>
+        </article>
+        <article class="panel evidence-panel">
+          <div class="evidence-top"><div><h2>Evidence for the call</h2><p>What the alert knows — and what it cannot tell us.</p></div><div class="file-chip"><span class="x">×</span> file unreadable</div></div>
+          <div class="evidence-grid">
+            <div class="preview"><div class="preview-canvas"><div class="broken"><span>×</span></div></div><div class="preview-caption"><div><strong>image_00481.jpg</strong><small>Preview unavailable</small></div><div class="mono">corrupt</div></div></div>
+            <div class="facts">
+              <dl class="fact"><dt>Alert</dt><dd>Corrupt file</dd></dl>
+              <dl class="fact"><dt>Detector</dt><dd><code>pillow-verify</code></dd></dl>
+              <dl class="fact"><dt>Confidence</dt><dd class="score"><b>1.00</b> certain</dd></dl>
+              <dl class="fact"><dt>Scope</dt><dd>1 of 17,842 files</dd></dl>
+              <dl class="fact"><dt>Last checked</dt><dd>Today, 09:42 UTC</dd></dl>
+              <div class="recommend"><div class="recommend-head"><span>Suggested next action</span><span>→</span></div><p><strong>Quarantine this file</strong> so the clean examples can continue to training. Ask the source owner to replace it.</p></div>
+            </div>
+          </div>
+        </article>
+      </section>
+      <section class="below">
+        <article class="activity">
+          <div class="section-head"><h3>State &amp; communication</h3><span id="activity-label">Waiting on your call</span></div>
+          <div class="feed" id="feed"><div class="feed-item"><div class="avatar face-b">AM</div><span><strong>Alex</strong> added the detector evidence</span><time>8m</time></div><div class="feed-item"><div class="avatar face-c">RK</div><span><strong>Rin</strong> is watching this issue</span><time>2m</time></div></div>
+          <div class="comment"><input id="comment" aria-label="Add a note" placeholder="Add context for the team…"><button id="send">Send note</button></div>
+        </article>
+        <article class="examples">
+          <div class="section-head"><h3>Review examples</h3><span>Nearby files · click to compare</span></div>
+          <div class="example-list">
+            <button class="example selected"><span class="mini-img bad">×</span><span class="example-copy"><strong>image_00481.jpg</strong><small>corrupt · selected</small></span></button>
+            <button class="example"><span class="mini-img"></span><span class="example-copy"><strong>image_00480.jpg</strong><small>valid · 0.98</small></span></button>
+            <button class="example"><span class="mini-img" style="background:#e9e2d4"><span style="display:block;width:18px;height:18px;border-radius:50%;background:#d0a65d;margin:8px 12px"></span></span><span class="example-copy"><strong>image_00482.jpg</strong><small>valid · 0.96</small></span></button>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+  const toast = document.getElementById('toast');
+  const showToast = message => { toast.textContent = message; toast.classList.add('show'); clearTimeout(window.toastTimer); window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2600); };
+  const record = document.getElementById('record');
+  document.querySelectorAll('input[name="decision"]').forEach(input => input.addEventListener('change', () => {
+    const label = input.value === 'quarantine' ? 'quarantine' : input.value === 'recheck' ? 're-check' : 'keep in review';
+    record.textContent = `Record ${label} decision →`;
+  }));
+  record.addEventListener('click', () => {
+    const selected = document.querySelector('input[name="decision"]:checked').value;
+    const label = selected === 'quarantine' ? 'quarantine' : selected === 'recheck' ? 're-check' : 'keep in review';
+    document.getElementById('status').textContent = 'RECORDED';
+    document.getElementById('status').className = 'status';
+    document.getElementById('status').style.cssText = 'color:var(--green);background:var(--green-pale)';
+    document.getElementById('activity-label').textContent = 'Decision shared with the team';
+    record.textContent = 'Decision recorded ✓'; record.style.background = 'var(--green)'; record.style.boxShadow = '0 3px 0 #1d604f';
+    showToast(`${label[0].toUpperCase() + label.slice(1)} decision recorded`);
+  });
+  document.getElementById('send').addEventListener('click', () => {
+    const input = document.getElementById('comment');
+    if (!input.value.trim()) { input.focus(); return; }
+    const item = document.createElement('div'); item.className = 'feed-item'; item.innerHTML = `<div class="avatar face-a">JZ</div><span><strong>You</strong> added “${input.value.trim().replace(/[<>]/g, '')}”</span><time>now</time>`;
+    document.getElementById('feed').append(item); input.value = ''; showToast('Note shared with reviewers');
+  });
+  document.getElementById('invite').addEventListener('click', () => showToast('Invite link copied to clipboard'));
+  document.querySelectorAll('.example').forEach(example => example.addEventListener('click', () => { document.querySelectorAll('.example').forEach(x => x.classList.remove('selected')); example.classList.add('selected'); showToast(`Comparing ${example.querySelector('strong').textContent}`); }));
+</script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review · dataset health</title>
+  <style>
+    :root {
+      --ink: #152238;
+      --muted: #5d6b80;
+      --line: #d6dee8;
+      --wash: #f5f7fa;
+      --panel: #ffffff;
+      --blue: #1458b8;
+      --blue-dark: #0c3f88;
+      --blue-soft: #e9f1ff;
+      --green: #207443;
+      --green-soft: #eaf6ed;
+      --amber: #8a5700;
+      --amber-soft: #fff4d8;
+      --red: #b42318;
+      --red-soft: #fff0ee;
+      --shadow: 0 2px 10px rgba(29, 55, 86, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 1120px; color: var(--ink); background: var(--wash); font: 14px/1.35 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button { font: inherit; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { left: 16px; top: 12px; z-index: 5; background: white; padding: 8px 12px; border: 2px solid var(--blue); }
+    header { height: 65px; display: flex; align-items: center; padding: 0 31px; background: var(--panel); border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 11px; min-width: 270px; }
+    .brand-mark { width: 26px; height: 26px; display: grid; place-items: center; border: 2px solid var(--blue); border-radius: 3px; color: var(--blue); font-weight: 800; font-size: 15px; }
+    .brand strong { font-size: 15px; letter-spacing: -.01em; }
+    .crumbs { color: var(--muted); font-size: 13px; }
+    .crumbs b { color: var(--ink); font-weight: 650; }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+    .sync { color: var(--green); display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .sync i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .help { width: 26px; height: 26px; border: 1px solid var(--line); background: #fff; border-radius: 3px; color: var(--muted); font-weight: 700; }
+    .wrap { width: calc(100% - 62px); max-width: 1506px; margin: 0 auto; }
+    .intro { display: flex; align-items: end; justify-content: space-between; padding: 21px 0 16px; }
+    h1 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: -.025em; }
+    .intro p { margin: 5px 0 0; color: var(--muted); }
+    .intro-right { display: flex; align-items: center; gap: 10px; }
+    .select { padding: 9px 31px 9px 10px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: white; }
+    .btn { border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--ink); padding: 9px 13px; cursor: pointer; font-weight: 650; }
+    .btn:hover, .btn:focus-visible { border-color: var(--blue); color: var(--blue-dark); outline: 2px solid #b9d3fa; outline-offset: 1px; }
+    .btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+    .btn.primary:hover, .btn.primary:focus-visible { background: var(--blue-dark); color: white; }
+    .statusbar { height: 74px; display: grid; grid-template-columns: 1.3fr repeat(4, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: 5px; box-shadow: var(--shadow); }
+    .statuscell { padding: 12px 17px; border-right: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }
+    .statuscell:last-child { border-right: 0; }
+    .statuscell .label { color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-size: 10px; font-weight: 750; }
+    .statuscell .value { margin-top: 2px; font-size: 19px; font-weight: 750; }
+    .statuscell .sub { color: var(--muted); font-size: 11px; }
+    .statuscell.alert .value { color: var(--red); }
+    .statuscell.ok .value { color: var(--green); }
+    .main { height: 603px; display: grid; grid-template-columns: 282px minmax(470px, 1fr) 318px; gap: 14px; margin-top: 16px; }
+    .panel { min-height: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; box-shadow: var(--shadow); }
+    .panel-head { min-height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { margin: 0; font-size: 14px; letter-spacing: .005em; }
+    .count { min-width: 25px; height: 22px; padding: 2px 7px; display: inline-grid; place-items: center; border-radius: 12px; background: var(--red-soft); color: var(--red); font-size: 12px; font-weight: 800; }
+    .issues { padding: 9px; }
+    .issue { width: 100%; text-align: left; background: white; border: 1px solid transparent; border-radius: 4px; padding: 13px 11px; cursor: pointer; margin-bottom: 7px; color: var(--ink); }
+    .issue:hover { background: #f6f9fd; }
+    .issue.selected { background: var(--blue-soft); border-color: #8eb5ee; box-shadow: inset 3px 0 var(--blue); }
+    .issue .row { display: flex; align-items: center; gap: 8px; }
+    .issue .title { font-weight: 750; }
+    .issue .desc { color: var(--muted); margin: 5px 0 0 20px; font-size: 12px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); flex: 0 0 auto; }
+    .issue .tag { margin: 9px 0 0 20px; display: inline-block; color: var(--red); background: white; border: 1px solid #f1b6b0; border-radius: 3px; padding: 2px 5px; font-size: 10px; font-weight: 750; }
+    .list-note { margin: 14px 10px 0; padding: 11px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .list-note strong { display: block; color: var(--ink); margin-bottom: 3px; }
+    .evidence { padding-bottom: 0; overflow: hidden; }
+    .evidence-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 17px 11px; }
+    .evidence-head h2 { margin: 0; font-size: 16px; }
+    .location { color: var(--muted); font-size: 12px; }
+    .file-card { display: grid; grid-template-columns: 188px 1fr; gap: 16px; margin: 0 17px; padding: 14px; border: 1px solid var(--line); border-radius: 4px; background: #fbfcfe; }
+    .broken { height: 138px; display: grid; place-items: center; border: 1px dashed #9aa9bc; background: repeating-linear-gradient(-45deg, #f3f5f8, #f3f5f8 8px, #e9edf2 8px, #e9edf2 16px); color: #607086; text-align: center; }
+    .broken-inner { display: grid; gap: 5px; justify-items: center; }
+    .broken-icon { width: 42px; height: 49px; position: relative; border: 2px solid #718096; border-radius: 2px; }
+    .broken-icon:after { content: "×"; position: absolute; top: 8px; left: 11px; color: var(--red); font-size: 25px; line-height: 1; font-weight: 750; }
+    .broken small { font-size: 11px; font-weight: 700; }
+    .file-meta h3 { margin: 1px 0 5px; font-size: 17px; }
+    .file-meta p { margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+    .meta-grid span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    .meta-grid b { display: block; margin-top: 1px; font-size: 13px; }
+    .detector { margin: 15px 17px 0; border: 1px solid var(--line); border-radius: 4px; }
+    .detector-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; border-bottom: 1px solid var(--line); }
+    .detector-row:last-child { border-bottom: 0; }
+    .detector-row span { color: var(--muted); font-size: 12px; }
+    .detector-row b { font-size: 13px; }
+    .score { color: var(--red); }
+    .why { margin: 15px 17px; padding: 11px 13px; background: var(--amber-soft); border-left: 3px solid #dda326; color: #634300; font-size: 12px; }
+    .why strong { color: #4f3500; }
+    .recommend { border-color: #b7cdea; }
+    .recommend .panel-head { background: #f0f6ff; border-color: #c7d9f4; }
+    .recommend .panel-head h2 { color: var(--blue-dark); }
+    .rec-body { padding: 16px; }
+    .rec-eyebrow { color: var(--blue); font-size: 10px; text-transform: uppercase; letter-spacing: .09em; font-weight: 800; }
+    .rec-body h3 { margin: 5px 0 7px; font-size: 19px; letter-spacing: -.02em; }
+    .rec-body p { margin: 0; color: var(--muted); font-size: 12px; }
+    .reason { margin: 16px 0; padding: 11px; background: var(--blue-soft); border-radius: 4px; }
+    .reason b { display: block; font-size: 12px; margin-bottom: 3px; }
+    .reason span { color: #35577f; font-size: 12px; }
+    .choice { display: grid; gap: 8px; }
+    .choice .btn { width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .choice .btn.primary { justify-content: center; text-align: center; padding: 11px; }
+    .choice kbd { font-size: 10px; font-family: inherit; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 2px 5px; background: #fafafa; }
+    .caution { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .caution strong { color: var(--ink); }
+    .toast { position: fixed; left: 31px; bottom: 18px; display: flex; align-items: center; gap: 14px; padding: 10px 12px 10px 14px; background: #18334f; color: white; border-radius: 4px; box-shadow: 0 5px 20px rgba(9, 24, 44, .25); font-size: 12px; transform: translateY(120px); transition: transform .18s ease; }
+    .toast.show { transform: translateY(0); }
+    .toast button { border: 0; border-left: 1px solid #6f879e; padding: 2px 0 2px 14px; background: none; color: #cde3ff; cursor: pointer; font-weight: 750; }
+    dialog { border: 0; border-radius: 5px; padding: 0; width: 410px; color: var(--ink); box-shadow: 0 18px 50px rgba(13, 32, 55, .3); }
+    dialog::backdrop { background: rgba(18, 35, 56, .35); }
+    .dialog-body { padding: 21px; }
+    .dialog-body h2 { margin: 0 0 8px; font-size: 19px; }
+    .dialog-body p { margin: 0; color: var(--muted); font-size: 13px; }
+    .dialog-actions { display: flex; justify-content: end; gap: 8px; padding: 12px 21px; background: var(--wash); border-top: 1px solid var(--line); }
+    @media (max-height: 780px) { .intro { padding-top: 13px; padding-bottom: 10px; } .main { height: 555px; } .file-card { padding: 10px; } .broken { height: 115px; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to review content</a>
+  <header>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">R</span><strong>Review</strong><span class="crumbs">/ <b>Issues</b></span></div>
+    <div class="header-actions"><span class="sync"><i aria-hidden="true"></i> All changes saved</span><button class="help" aria-label="Open help">?</button></div>
+  </header>
+  <main id="main" class="wrap">
+    <div class="intro">
+      <div><h1>Resolve dataset issues</h1><p>Review flagged files before they enter your training set.</p></div>
+      <div class="intro-right"><select class="select" aria-label="Dataset"><option>yolo-in-1789003245</option></select><button class="btn" id="refresh">Refresh scan</button></div>
+    </div>
+    <section class="statusbar" aria-label="Dataset status summary">
+      <div class="statuscell alert"><span class="label">Needs attention</span><span class="value" id="alertTotal">1 alert</span><span class="sub">blocking review</span></div>
+      <div class="statuscell"><span class="label">Files scanned</span><span class="value">4,218</span><span class="sub">of 4,218 files</span></div>
+      <div class="statuscell"><span class="label">Detector</span><span class="value">pillow-verify</span><span class="sub">image integrity</span></div>
+      <div class="statuscell"><span class="label">Confidence</span><span class="value">1.00</span><span class="sub">high confidence</span></div>
+      <div class="statuscell ok"><span class="label">Last scan</span><span class="value">Just now</span><span class="sub">12 Sep 2026, 14:32</span></div>
+    </section>
+    <div class="main">
+      <section class="panel" aria-labelledby="issues-title">
+        <div class="panel-head"><h2 id="issues-title">Open issues</h2><span class="count" id="issueCount" aria-label="1 open issue">1</span></div>
+        <div class="issues">
+          <button class="issue selected" aria-current="true" data-file="train/000184.jpg">
+            <span class="row"><span class="dot" aria-hidden="true"></span><span class="title">Corrupt file</span></span>
+            <span class="desc">Cannot be decoded or verified.</span><span class="tag">HIGH CONFIDENCE</span>
+          </button>
+          <div class="list-note"><strong>Why this matters</strong>Unreadable files can stop training jobs or silently reduce dataset quality.</div>
+        </div>
+      </section>
+      <section class="panel evidence" aria-labelledby="evidence-title">
+        <div class="evidence-head"><h2 id="evidence-title">Review example</h2><span class="location" id="location">train/000184.jpg · 1 of 1</span></div>
+        <div class="file-card">
+          <div class="broken" role="img" aria-label="Preview unavailable: file appears corrupted"><div class="broken-inner"><span class="broken-icon" aria-hidden="true"></span><small>Preview unavailable</small></div></div>
+          <div class="file-meta"><h3>000184.jpg</h3><p>This file could not be decoded by the image verifier.</p><div class="meta-grid"><div><span>Path</span><b>train/000184.jpg</b></div><div><span>Size</span><b>2.4 MB</b></div><div><span>Format</span><b>JPEG</b></div><div><span>Modified</span><b>12 Sep 2026</b></div></div></div>
+        </div>
+        <div class="detector" aria-label="Detection details"><div class="detector-row"><span>Detector</span><b>pillow-verify</b></div><div class="detector-row"><span>Verification score</span><b class="score">1.00 · failed</b></div><div class="detector-row"><span>Recommended action</span><b>Move to quarantine</b></div></div>
+        <div class="why"><strong>Evidence:</strong> decoder raised an integrity error while reading the JPEG stream. The file is not safe to include in the training set.</div>
+      </section>
+      <aside class="panel recommend" aria-labelledby="recommend-title">
+        <div class="panel-head"><h2 id="recommend-title">Recommended next step</h2><span aria-hidden="true">→</span></div>
+        <div class="rec-body"><div class="rec-eyebrow">Prevent training failure</div><h3>Quarantine this file</h3><p>Move it out of the active dataset so the remaining files can be used safely.</p><div class="reason"><b>Why we recommend this</b><span>It preserves the original for recovery while removing the risk from training.</span></div><div class="choice"><button class="btn primary" id="quarantine">Quarantine file <span aria-hidden="true">→</span></button><button class="btn" id="download">Download original <kbd>⌘D</kbd></button><button class="btn" id="dismiss">Dismiss issue <kbd>⌘R</kbd></button></div><div class="caution"><strong>You stay in control.</strong> Quarantine can be undone for this file from the confirmation message.</div></div>
+      </aside>
+    </div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText">File moved to quarantine.</span><button id="undo">Undo</button></div>
+  <dialog id="confirmDialog" aria-labelledby="dialogTitle"><div class="dialog-body"><h2 id="dialogTitle">Move 000184.jpg to quarantine?</h2><p>The original will stay recoverable, but this file will no longer be included in training. You can undo this action.</p></div><div class="dialog-actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="confirm">Move to quarantine</button></div></dialog>
+  <script>
+    const dialog = document.querySelector('#confirmDialog');
+    const toast = document.querySelector('#toast');
+    const toastText = document.querySelector('#toastText');
+    const alertTotal = document.querySelector('#alertTotal');
+    const issueCount = document.querySelector('#issueCount');
+    let toastTimer;
+    const showToast = (text, undo = true) => {
+      toastText.textContent = text;
+      document.querySelector('#undo').hidden = !undo;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 6000);
+    };
+    document.querySelector('#quarantine').addEventListener('click', () => dialog.showModal());
+    document.querySelector('#cancel').addEventListener('click', () => dialog.close());
+    document.querySelector('#confirm').addEventListener('click', () => {
+      dialog.close();
+      alertTotal.textContent = '0 alerts';
+      issueCount.textContent = '0';
+      issueCount.setAttribute('aria-label', '0 open issues');
+      document.querySelector('#quarantine').disabled = true;
+      document.querySelector('#quarantine').textContent = 'Quarantined';
+      document.querySelector('#quarantine').classList.remove('primary');
+      showToast('000184.jpg moved to quarantine.');
+    });
+    document.querySelector('#undo').addEventListener('click', () => {
+      alertTotal.textContent = '1 alert';
+      issueCount.textContent = '1';
+      issueCount.setAttribute('aria-label', '1 open issue');
+      const action = document.querySelector('#quarantine');
+      action.disabled = false;
+      action.textContent = 'Quarantine file →';
+      action.classList.add('primary');
+      showToast('Action undone. File is back in review.', false);
+    });
+    document.querySelector('#dismiss').addEventListener('click', () => showToast('Issue dismissed for this review.', false));
+    document.querySelector('#download').addEventListener('click', () => showToast('Original download queued.', false));
+    document.querySelector('#refresh').addEventListener('click', () => showToast('Scan is up to date.', false));
+    document.addEventListener('keydown', event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'd') { event.preventDefault(); document.querySelector('#download').click(); }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'r') { event.preventDefault(); document.querySelector('#dismiss').click(); }
+    });
+  </script>
+</body>
+</html>

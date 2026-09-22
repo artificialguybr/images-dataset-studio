@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate / Swiss grid</title>
+  <style>
+    :root {
+      --paper: #f4f3ef;
+      --panel: #fbfaf7;
+      --canvas: #dedfdc;
+      --ink: #171918;
+      --muted: #6c706d;
+      --line: #c9cbc7;
+      --line-strong: #171918;
+      --red: #d82920;
+      --blue: #2557a5;
+      --green: #3f765a;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 12px;
+    }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+    .shell { height: 100vh; min-height: 620px; display: grid; grid-template-rows: 68px 1fr 28px; }
+    header {
+      display: grid;
+      grid-template-columns: 236px 1fr auto;
+      align-items: center;
+      border-bottom: 1px solid var(--line-strong);
+      padding: 0 24px;
+      gap: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .brand-mark { width: 20px; height: 20px; display: grid; place-items: center; background: var(--red); color: var(--paper); font-weight: 700; font-size: 11px; }
+    .brand small { color: var(--muted); font-size: 10px; letter-spacing: .13em; font-weight: 400; }
+    .project { display: flex; align-items: baseline; gap: 15px; }
+    .project strong { font-size: 14px; letter-spacing: .01em; }
+    .project span { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    .save-state { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .save-state.dirty { color: var(--red); }
+    .save {
+      min-width: 86px; border: 1px solid var(--ink); padding: 8px 15px; background: var(--ink); color: var(--paper);
+      text-transform: uppercase; letter-spacing: .08em; font-size: 10px; font-weight: 700;
+    }
+    .save:hover { background: var(--red); border-color: var(--red); }
+    main { min-height: 0; display: grid; grid-template-columns: 236px minmax(0, 1fr) 318px; }
+    aside, .center { min-width: 0; min-height: 0; }
+    .left { border-right: 1px solid var(--line); padding: 22px 19px 18px 24px; display: flex; flex-direction: column; }
+    .section-label { margin: 0 0 13px; color: var(--muted); font: 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    .dataset-name { margin: 0 0 26px; font-size: 18px; letter-spacing: -.035em; }
+    .dataset-name span { display: block; color: var(--muted); margin-top: 4px; font: 10px var(--mono); letter-spacing: .03em; }
+    nav { border-top: 1px solid var(--line); }
+    .nav-item {
+      width: 100%; display: flex; justify-content: space-between; align-items: center; border: 0; border-bottom: 1px solid var(--line);
+      padding: 11px 0; background: transparent; text-align: left; font-size: 11px; letter-spacing: .04em;
+    }
+    .nav-item:hover { color: var(--red); }
+    .nav-item.active { font-weight: 700; }
+    .nav-item.active::before { content: ""; width: 5px; height: 5px; margin-right: -5px; background: var(--red); order: 2; }
+    .nav-item span { color: var(--muted); font: 10px var(--mono); }
+    .progress-block { margin-top: auto; border-top: 1px solid var(--line); padding-top: 15px; }
+    .progress-label { display: flex; justify-content: space-between; margin-bottom: 9px; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+    .progress-label b { color: var(--ink); font-weight: 400; }
+    .progress { height: 5px; background: var(--line); }
+    .progress i { display: block; width: 64%; height: 100%; background: var(--red); transition: width .2s ease; }
+    .center { display: grid; grid-template-rows: 57px minmax(0, 1fr); background: var(--canvas); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 0 22px; background: var(--paper); }
+    .tools { display: flex; align-items: center; gap: 0; }
+    .tool {
+      min-width: 70px; height: 31px; border: 1px solid var(--line); border-right: 0; padding: 0 12px; background: transparent;
+      font: 10px var(--mono); letter-spacing: .05em; text-transform: uppercase;
+    }
+    .tool:last-child { border-right: 1px solid var(--line); }
+    .tool:hover { color: var(--red); }
+    .tool.active { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+    .tool + .tool.active { margin-left: -1px; }
+    .view-data { display: flex; gap: 18px; color: var(--muted); font: 10px var(--mono); }
+    .view-data b { color: var(--ink); font-weight: 400; }
+    .workarea { min-height: 0; padding: 23px 24px 20px; display: flex; align-items: center; justify-content: center; }
+    .frame { position: relative; width: min(100%, 900px); aspect-ratio: 920 / 590; border: 1px solid var(--ink); background: #c5d0cf; box-shadow: 9px 9px 0 rgba(23,25,24,.13); }
+    .frame::before, .frame::after { content: ""; position: absolute; z-index: 2; pointer-events: none; }
+    .frame::before { inset: 7px; border: 1px solid rgba(23,25,24,.22); }
+    .frame::after { left: 50%; top: 0; bottom: 0; border-left: 1px dashed rgba(23,25,24,.15); }
+    svg { display: block; width: 100%; height: 100%; }
+    .annotation { fill: rgba(216,41,32,.09); stroke: var(--red); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; }
+    .annotation.selected { fill: rgba(216,41,32,.19); stroke-width: 3; }
+    .point { fill: var(--blue); stroke: var(--paper); stroke-width: 2; cursor: pointer; vector-effect: non-scaling-stroke; }
+    .annotation-tag { fill: var(--red); pointer-events: none; }
+    .annotation-tag text { fill: var(--paper); font: 10px var(--mono); letter-spacing: .04em; }
+    .frame-meta { position: absolute; z-index: 3; left: 13px; bottom: 11px; display: flex; gap: 9px; color: var(--ink); font: 10px var(--mono); pointer-events: none; }
+    .frame-meta span { padding: 3px 5px; background: rgba(244,243,239,.88); }
+    .right { border-left: 1px solid var(--line); background: var(--panel); padding: 22px 22px 17px; display: flex; flex-direction: column; }
+    .right-head { display: flex; justify-content: space-between; align-items: start; margin-bottom: 22px; }
+    .right h2 { margin: 0; font-size: 18px; font-weight: 400; letter-spacing: -.03em; }
+    .count { color: var(--muted); font: 10px var(--mono); }
+    .class-list { border-top: 1px solid var(--line-strong); }
+    .class-row { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--line); }
+    .class-row button { border: 0; padding: 0; background: transparent; text-align: left; }
+    .class-row button:hover { color: var(--red); }
+    .swatch { width: 8px; height: 8px; background: var(--red); }
+    .class-row:nth-child(2) .swatch { background: var(--blue); }
+    .class-row:nth-child(3) .swatch { background: var(--green); }
+    .class-row:nth-child(4) .swatch { background: #ae7e2e; }
+    .class-row .name { font-size: 12px; }
+    .class-row .num { color: var(--muted); font: 10px var(--mono); }
+    .class-row.active .name { font-weight: 700; }
+    .hint { margin: 15px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .details { margin-top: auto; border-top: 1px solid var(--line-strong); padding-top: 14px; }
+    .details-toggle { width: 100%; display: flex; justify-content: space-between; border: 0; padding: 0 0 11px; background: transparent; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .details-toggle span { color: var(--red); font: 13px var(--mono); }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px 15px; padding-top: 3px; }
+    .detail-grid div { display: grid; gap: 3px; }
+    .detail-grid dt { color: var(--muted); font: 9px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .detail-grid dd { margin: 0; font: 11px var(--mono); }
+    .detail-grid.hidden { display: none; }
+    footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding: 0 24px; color: var(--muted); font: 10px var(--mono); letter-spacing: .04em; }
+    footer .key { color: var(--ink); }
+    .pager { display: flex; align-items: center; gap: 9px; }
+    .pager button { width: 23px; height: 20px; min-height: 0; border: 1px solid var(--line); padding: 0; background: var(--paper); font: 14px var(--mono); line-height: 15px; }
+    .pager button:hover { border-color: var(--ink); }
+    @media (max-width: 1000px) {
+      body { overflow: auto; }
+      .shell { min-height: 780px; height: auto; }
+      header { grid-template-columns: 1fr auto; padding: 0 15px; }
+      .project { display: none; }
+      main { grid-template-columns: 180px minmax(0, 1fr); }
+      .right { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); min-height: 260px; }
+      .workarea { padding: 18px; }
+    }
+    @media (max-width: 650px) {
+      .shell { display: block; min-height: 100vh; }
+      header { height: 60px; }
+      main { display: block; }
+      .left { border: 0; border-bottom: 1px solid var(--line); padding: 16px; }
+      .dataset-name { margin-bottom: 14px; }
+      nav { display: grid; grid-template-columns: 1fr 1fr; }
+      .nav-item { padding: 8px 5px; }
+      .progress-block { margin-top: 14px; }
+      .center { min-height: 500px; }
+      .toolbar { padding: 0 12px; overflow: auto; }
+      .view-data { display: none; }
+      .workarea { padding: 15px 9px; }
+      .frame { box-shadow: 5px 5px 0 rgba(23,25,24,.13); }
+      .right { padding: 18px 16px; }
+      footer { height: 34px; padding: 0 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark">A</span><span>Annotate</span><small>Images / 04</small></div>
+      <div class="project"><strong>Architecture / Field Notes</strong><span>Batch 07 · manual labels</span></div>
+      <div class="header-actions"><span id="saveState" class="save-state">All changes saved</span><button id="save" class="save" type="button">Save</button></div>
+    </header>
+    <main>
+      <aside class="left" aria-label="Dataset navigation">
+        <p class="section-label">Dataset</p>
+        <h1 class="dataset-name">Architecture / Field Notes<span>2,418 images · 64% labeled</span></h1>
+        <nav>
+          <button class="nav-item active" type="button">Annotate <span>03</span></button>
+          <button class="nav-item" type="button">Review <span>12</span></button>
+          <button class="nav-item" type="button">Classes <span>04</span></button>
+          <button class="nav-item" type="button">Export <span>—</span></button>
+        </nav>
+        <div class="progress-block">
+          <div class="progress-label"><span>Batch progress</span><b id="progressText">64 / 100</b></div>
+          <div class="progress"><i id="progressFill"></i></div>
+        </div>
+      </aside>
+      <section class="center" aria-label="Annotation workspace">
+        <div class="toolbar">
+          <div class="tools" role="toolbar" aria-label="Annotation mode">
+            <button class="tool active" data-mode="box" type="button">Box <span>⌘1</span></button>
+            <button class="tool" data-mode="polygon" type="button">Polygon <span>⌘2</span></button>
+            <button class="tool" data-mode="point" type="button">Point <span>⌘3</span></button>
+            <button class="tool" data-mode="pan" type="button">Pan <span>space</span></button>
+          </div>
+          <div class="view-data"><span>Zoom <b>100%</b></span><span>Image <b id="imageNumber">03 / 24</b></span></div>
+        </div>
+        <div class="workarea">
+          <div class="frame" id="frame" aria-label="Image annotation canvas" tabindex="0">
+            <svg id="canvas" viewBox="0 0 920 590" role="img" aria-labelledby="imageTitle imageDesc">
+              <title id="imageTitle">Sunlit concrete building and trees</title>
+              <desc id="imageDesc">Mock image showing a modern building, tree and entrance marked with annotation boxes.</desc>
+              <rect width="920" height="590" fill="#c7d3d2"/>
+              <rect y="0" width="920" height="294" fill="#cbd8d6"/>
+              <path d="M0 313 L112 227 L208 290 L317 175 L439 299 L545 211 L674 306 L793 220 L920 301 V380 H0Z" fill="#8c9d9a"/>
+              <path d="M0 372 L165 323 L284 349 L426 307 L589 356 L736 317 L920 364 V460 H0Z" fill="#667772"/>
+              <rect x="166" y="185" width="556" height="290" fill="#eeeae1"/>
+              <rect x="203" y="218" width="202" height="172" fill="#80999d"/>
+              <rect x="424" y="218" width="258" height="172" fill="#9bb0ae"/>
+              <rect x="203" y="218" width="202" height="12" fill="#171918" opacity=".82"/>
+              <rect x="424" y="218" width="258" height="12" fill="#171918" opacity=".82"/>
+              <rect x="424" y="240" width="18" height="150" fill="#eeeae1"/>
+              <rect x="511" y="240" width="12" height="150" fill="#eeeae1"/>
+              <rect x="592" y="240" width="12" height="150" fill="#eeeae1"/>
+              <rect x="166" y="390" width="556" height="85" fill="#d4d0c6"/>
+              <path d="M268 475 L350 475 L402 590 L204 590Z" fill="#a8a69f"/>
+              <path d="M528 475 L606 475 L762 590 L469 590Z" fill="#b9b6ad"/>
+              <rect x="0" y="461" width="920" height="129" fill="#b1b1aa"/>
+              <path d="M0 504 H920" stroke="#d9d5ca" stroke-width="4"/>
+              <path d="M0 553 H920" stroke="#858780" stroke-width="2"/>
+              <g fill="#334a3c">
+                <circle cx="92" cy="284" r="42"/><circle cx="61" cy="316" r="35"/><circle cx="118" cy="326" r="37"/><circle cx="74" cy="256" r="30"/>
+                <rect x="83" y="326" width="15" height="136" fill="#4d4435"/>
+              </g>
+              <g fill="#1c2723"><circle cx="808" cy="300" r="46"/><circle cx="850" cy="328" r="41"/><circle cx="773" cy="337" r="35"/><rect x="807" y="337" width="14" height="125" fill="#4d4435"/></g>
+              <g id="annotations"></g>
+            </svg>
+            <div class="frame-meta"><span id="filename">IMG_0247.JPG</span><span>5472 × 3648</span></div>
+          </div>
+        </div>
+      </section>
+      <aside class="right" aria-label="Labels and annotation details">
+        <div class="right-head"><div><p class="section-label">Label set</p><h2>Classes / tags</h2></div><span id="labelCount" class="count">03 labels</span></div>
+        <div id="classList" class="class-list" role="listbox" aria-label="Choose active label">
+          <div class="class-row active" data-label="building" role="option" aria-selected="true"><i class="swatch"></i><button type="button"> <span class="name">building</span></button><span class="num">12</span></div>
+          <div class="class-row" data-label="window" role="option" aria-selected="false"><i class="swatch"></i><button type="button"><span class="name">window</span></button><span class="num">08</span></div>
+          <div class="class-row" data-label="tree" role="option" aria-selected="false"><i class="swatch"></i><button type="button"><span class="name">tree</span></button><span class="num">16</span></div>
+          <div class="class-row" data-label="entrance" role="option" aria-selected="false"><i class="swatch"></i><button type="button"><span class="name">entrance</span></button><span class="num">05</span></div>
+        </div>
+        <p class="hint" id="hint">Choose a class, then click the image to place a box. Existing marks can be selected and adjusted.</p>
+        <div class="details">
+          <button id="detailsToggle" class="details-toggle" type="button" aria-expanded="true">Selection details <span>−</span></button>
+          <dl id="detailsGrid" class="detail-grid">
+            <div><dt>Class</dt><dd id="detailClass">building</dd></div>
+            <div><dt>Geometry</dt><dd id="detailGeometry">BOX</dd></div>
+            <div><dt>Position</dt><dd id="detailPosition">x 174 · y 186</dd></div>
+            <div><dt>Confidence</dt><dd id="detailConfidence">manual</dd></div>
+          </dl>
+        </div>
+      </aside>
+    </main>
+    <footer>
+      <span><span class="key">⌘S</span> save &nbsp; <span class="key">⌘Z</span> undo</span>
+      <div class="pager"><button id="prev" type="button" aria-label="Previous image">‹</button><span id="pagerText">IMG_0247.JPG · 03 / 24</span><button id="next" type="button" aria-label="Next image">›</button></div>
+    </footer>
+  </div>
+  <script>
+    const svg = document.getElementById('canvas');
+    const annotationsEl = document.getElementById('annotations');
+    const stateEl = document.getElementById('saveState');
+    const files = ['IMG_0245.JPG','IMG_0246.JPG','IMG_0247.JPG','IMG_0248.JPG','IMG_0249.JPG'];
+    let imageIndex = 2;
+    let mode = 'box';
+    let activeLabel = 'building';
+    let selected = 0;
+    let dirty = false;
+    let detailsOpen = true;
+    let history = [];
+    let annotations = [
+      { id: 1, label: 'building', type: 'BOX', x: 166, y: 185, w: 556, h: 290 },
+      { id: 2, label: 'tree', type: 'BOX', x: 34, y: 224, w: 130, h: 240 },
+      { id: 3, label: 'entrance', type: 'BOX', x: 346, y: 380, w: 188, h: 110 }
+    ];
+    const esc = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    function snapshot() { history.push(JSON.stringify(annotations)); if (history.length > 30) history.shift(); }
+    function markDirty(message = 'Unsaved changes') { dirty = true; stateEl.textContent = message; stateEl.classList.add('dirty'); }
+    function render() {
+      annotationsEl.innerHTML = annotations.map((a, i) => {
+        const selectedClass = i === selected ? ' selected' : '';
+        const labelWidth = Math.max(56, a.label.length * 7 + 15);
+        if (a.type === 'POINT') return `<circle class="point${selectedClass}" data-id="${a.id}" cx="${a.x}" cy="${a.y}" r="7" tabindex="0" role="button" aria-label="${esc(a.label)} point"></circle>`;
+        const points = `${a.x},${a.y} ${a.x + a.w},${a.y + 10} ${a.x + a.w - 14},${a.y + a.h} ${a.x + 14},${a.y + a.h - 8}`;
+        const shape = a.type === 'POLYGON'
+          ? `<polygon class="annotation${selectedClass}" points="${points}" tabindex="0" role="button" aria-label="${esc(a.label)} annotation"></polygon>`
+          : `<rect class="annotation${selectedClass}" x="${a.x}" y="${a.y}" width="${a.w}" height="${a.h}" tabindex="0" role="button" aria-label="${esc(a.label)} annotation"></rect>`;
+        return `<g data-id="${a.id}">${shape}<g class="annotation-tag"><rect x="${a.x}" y="${Math.max(0, a.y - 19)}" width="${labelWidth}" height="19"></rect><text x="${a.x + 7}" y="${Math.max(13, a.y - 6)}">${esc(a.label.toUpperCase())}</text></g></g>`;
+      }).join('');
+      document.getElementById('labelCount').textContent = String(annotations.length).padStart(2, '0') + ' labels';
+      const a = annotations[selected];
+      if (!a) return;
+      document.getElementById('detailClass').textContent = a.label;
+      document.getElementById('detailGeometry').textContent = a.type;
+      document.getElementById('detailPosition').textContent = `x ${Math.round(a.x)} · y ${Math.round(a.y)}`;
+      document.getElementById('detailConfidence').textContent = a.type === 'POINT' ? 'manual' : 'manual';
+    }
+    function setMode(nextMode) {
+      mode = nextMode;
+      document.querySelectorAll('.tool').forEach(button => button.classList.toggle('active', button.dataset.mode === mode));
+      document.getElementById('hint').textContent = mode === 'pan' ? 'Pan mode active. Select a mark to inspect its label details.' : `Choose a class, then click the image to place a ${mode}. Existing marks can be selected.`;
+    }
+    function chooseLabel(label) {
+      activeLabel = label;
+      document.querySelectorAll('.class-row').forEach(row => {
+        const active = row.dataset.label === label;
+        row.classList.toggle('active', active); row.setAttribute('aria-selected', active);
+      });
+    }
+    document.querySelectorAll('.tool').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+    document.querySelectorAll('.class-row').forEach(row => row.addEventListener('click', () => chooseLabel(row.dataset.label)));
+    annotationsEl.addEventListener('click', event => {
+      const mark = event.target.closest('[data-id]');
+      if (!mark) return;
+      event.stopPropagation();
+      selected = annotations.findIndex(a => a.id === Number(mark.dataset.id));
+      const item = annotations[selected];
+      if (item) chooseLabel(item.label);
+      render();
+    });
+    svg.addEventListener('click', event => {
+      if (event.target.closest('[data-id]') || mode === 'pan') return;
+      const point = svg.createSVGPoint(); point.x = event.clientX; point.y = event.clientY;
+      const svgPoint = point.matrixTransform(svg.getScreenCTM().inverse());
+      snapshot();
+      const x = Math.max(12, Math.min(908, svgPoint.x));
+      const y = Math.max(12, Math.min(578, svgPoint.y));
+      const id = annotations.reduce((max, a) => Math.max(max, a.id), 0) + 1;
+      if (mode === 'point') annotations.push({ id, label: activeLabel, type: 'POINT', x, y });
+      else annotations.push({ id, label: activeLabel, type: mode.toUpperCase(), x: Math.max(8, x - 70), y: Math.max(8, y - 46), w: 140, h: 92 });
+      selected = annotations.length - 1; markDirty(); render();
+    });
+    document.getElementById('detailsToggle').addEventListener('click', () => {
+      detailsOpen = !detailsOpen;
+      document.getElementById('detailsGrid').classList.toggle('hidden', !detailsOpen);
+      document.getElementById('detailsToggle').setAttribute('aria-expanded', detailsOpen);
+      document.querySelector('#detailsToggle span').textContent = detailsOpen ? '−' : '+';
+    });
+    function changeImage(delta) {
+      imageIndex = (imageIndex + delta + files.length) % files.length;
+      const file = files[imageIndex];
+      document.getElementById('filename').textContent = file;
+      document.getElementById('pagerText').textContent = `${file} · ${String(imageIndex + 1).padStart(2, '0')} / 24`;
+      document.getElementById('imageNumber').textContent = `${String(imageIndex + 1).padStart(2, '0')} / 24`;
+      stateEl.textContent = 'Image changed'; stateEl.classList.remove('dirty');
+    }
+    document.getElementById('prev').addEventListener('click', () => changeImage(-1));
+    document.getElementById('next').addEventListener('click', () => changeImage(1));
+    document.getElementById('save').addEventListener('click', () => {
+      stateEl.textContent = 'Saving…';
+      setTimeout(() => { dirty = false; stateEl.textContent = 'All changes saved'; stateEl.classList.remove('dirty'); }, 450);
+    });
+    function undo() {
+      if (!history.length) return;
+      annotations = JSON.parse(history.pop()); selected = Math.min(selected, annotations.length - 1); markDirty('Undo applied'); render();
+    }
+    document.addEventListener('keydown', event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); document.getElementById('save').click(); }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
+      if (event.key === '1') setMode('box'); if (event.key === '2') setMode('polygon'); if (event.key === '3') setMode('point');
+    });
+    render();
+  </script>
+</body>
+</html>

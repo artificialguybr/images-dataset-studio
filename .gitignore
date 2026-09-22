@@ -1,0 +1,31 @@
+# runtime state — never ship
+data/
+!data/.gitkeep
+backend/data/
+*.db
+*.db-wal
+*.db-shm
+
+# python
+__pycache__/
+*.pyc
+.venv/
+uv.lock.tmp
+
+# node / frontend build
+frontend/node_modules/
+frontend/dist/
+plugins/*/vendor-*/
+
+# models & plugin artifacts
+plugins/*.pluginpack
+plugins/**/vendor/
+*.onnx
+*.tflite
+*.pt
+
+# scratch
+/tmp/
+.DS_Store
+backups/
+.pytest_cache/

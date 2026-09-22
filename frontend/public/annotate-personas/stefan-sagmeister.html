@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate — Stefan Sagmeister</title>
+  <style>
+    :root {
+      --ink: #141414;
+      --paper: #f2efe7;
+      --paper-deep: #e4dfd3;
+      --lime: #d8f45a;
+      --coral: #ff745f;
+      --blue: #3466f6;
+      --yellow: #ffd34d;
+      --muted: #69675f;
+      --line: #c9c4b9;
+      --shadow: 5px 5px 0 var(--ink);
+      --tiny: 10px;
+      --small: 12px;
+      --body: 14px;
+      --title: clamp(28px, 3vw, 46px);
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: var(--body);
+      letter-spacing: -.01em;
+    }
+    button { font: inherit; color: inherit; }
+    button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+    .app {
+      min-height: 100%;
+      display: grid;
+      grid-template-rows: 72px minmax(0, 1fr);
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 24px;
+      border-bottom: 2px solid var(--ink);
+      background: var(--paper);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 210px;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--ink);
+      background: var(--coral);
+      box-shadow: 3px 3px 0 var(--ink);
+      font-size: 21px;
+      font-weight: 900;
+      transform: rotate(-7deg);
+    }
+    .brand-name { font-size: 17px; font-weight: 900; letter-spacing: -.06em; }
+    .brand-name span { color: var(--muted); font-weight: 400; }
+    .crumbs { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; }
+    .crumbs b { color: var(--ink); }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .save-state { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; }
+    .save-dot { width: 8px; height: 8px; background: var(--lime); border: 1px solid var(--ink); border-radius: 50%; }
+    .save-dot.unsaved { background: var(--coral); }
+    .save-btn {
+      cursor: pointer;
+      border: 2px solid var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+      min-height: 36px;
+      padding: 0 17px;
+      font-weight: 800;
+      box-shadow: 3px 3px 0 var(--blue);
+      transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+    }
+    .save-btn:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--blue); }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 218px minmax(500px, 1fr) 280px;
+    }
+    .sidebar, .inspector { min-height: 0; }
+    .sidebar {
+      padding: 22px 16px 18px;
+      border-right: 2px solid var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ebe7dd;
+    }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-transform: uppercase;
+      font-weight: 900;
+      font-size: 10px;
+      letter-spacing: .11em;
+    }
+    .eyebrow span:last-child { color: var(--muted); font-weight: 400; letter-spacing: 0; }
+    .section-rule { height: 1px; background: var(--ink); margin: 11px 0 15px; }
+    .tool-list { display: grid; gap: 7px; }
+    .tool {
+      appearance: none;
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      padding: 9px 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+      transition: background .18s var(--ease), border-color .18s var(--ease), transform .18s var(--ease);
+    }
+    .tool:hover { border-color: var(--ink); transform: translateX(3px); }
+    .tool.active { border: 1px solid var(--ink); background: var(--lime); box-shadow: 3px 3px 0 var(--ink); }
+    .tool-icon { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--ink); background: var(--paper); font-weight: 900; font-size: 14px; }
+    .tool.active .tool-icon { background: var(--coral); }
+    .tool-copy { display: grid; gap: 2px; }
+    .tool-copy strong { font-size: 12px; }
+    .tool-copy small { font-size: 10px; color: var(--muted); }
+    .sidebar-bottom { display: grid; gap: 14px; }
+    .shortcut {
+      border-top: 1px solid var(--ink);
+      padding-top: 12px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+    kbd { border: 1px solid var(--ink); background: var(--paper); padding: 2px 4px; color: var(--ink); }
+    .progress-wrap { display: grid; gap: 7px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 11px; }
+    .progress-label strong { font-size: 14px; }
+    .progress-bar { height: 11px; border: 1px solid var(--ink); background: var(--paper); padding: 2px; }
+    .progress-fill { height: 100%; width: 62%; background: var(--blue); transition: width .35s var(--ease); }
+
+    .stage {
+      min-width: 0;
+      min-height: 0;
+      padding: 20px 24px 18px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      background: var(--paper);
+    }
+    .stage-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+    .stage-head h1 { margin: 0; font-size: var(--title); line-height: .88; letter-spacing: -.085em; font-weight: 900; }
+    .stage-head h1 em { color: var(--coral); font-style: normal; }
+    .stage-meta { text-align: right; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .stage-meta strong { display: block; color: var(--ink); font-size: 13px; }
+
+    .canvas-wrap {
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid var(--ink);
+      background: #cbd7c1;
+      box-shadow: var(--shadow);
+    }
+    .canvas-wrap::before {
+      content: "ANNOTATE / 04";
+      position: absolute;
+      z-index: 2;
+      top: 13px;
+      left: 15px;
+      padding: 5px 7px;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+    }
+    .canvas-wrap::after {
+      content: "drag labels onto the image";
+      position: absolute;
+      z-index: 2;
+      right: 15px;
+      bottom: 12px;
+      padding: 5px 7px;
+      background: var(--yellow);
+      border: 1px solid var(--ink);
+      font-size: 10px;
+      transform: rotate(-2deg);
+    }
+    .mock-image { width: 100%; height: 100%; display: block; }
+    .annotation {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border: 2px solid var(--ink);
+      padding: 7px 9px;
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 var(--ink);
+      transform: rotate(var(--tilt));
+      transition: transform .18s var(--ease), box-shadow .18s var(--ease), filter .18s var(--ease);
+      user-select: none;
+    }
+    .annotation:hover, .annotation.selected { transform: rotate(0) translate(-2px, -3px); box-shadow: 5px 6px 0 var(--ink); filter: saturate(1.15); }
+    .annotation::before { content: ""; width: 7px; height: 7px; border: 1px solid var(--ink); border-radius: 50%; background: currentColor; }
+    .annotation[data-color="lime"] { background: var(--lime); }
+    .annotation[data-color="coral"] { background: var(--coral); }
+    .annotation[data-color="yellow"] { background: var(--yellow); }
+    .annotation[data-color="blue"] { background: var(--blue); color: var(--paper); }
+    .annotation[data-color="blue"]::before { border-color: var(--paper); }
+    .annotation[data-color="blue"] { border-color: var(--ink); }
+    .tag-1 { left: 14%; top: 25%; --tilt: -4deg; }
+    .tag-2 { left: 56%; top: 17%; --tilt: 3deg; }
+    .tag-3 { left: 69%; top: 61%; --tilt: -3deg; }
+    .tag-4 { left: 24%; top: 70%; --tilt: 4deg; }
+    .tag-5 { left: 45%; top: 45%; --tilt: -2deg; }
+    .pin-line { position: absolute; z-index: 2; height: 1px; background: var(--ink); transform-origin: left center; opacity: .8; pointer-events: none; }
+    .line-1 { width: 110px; left: 22%; top: 32%; transform: rotate(136deg); }
+    .line-2 { width: 75px; left: 60%; top: 25%; transform: rotate(44deg); }
+    .line-3 { width: 87px; left: 73%; top: 68%; transform: rotate(20deg); }
+    .line-4 { width: 78px; left: 31%; top: 75%; transform: rotate(162deg); }
+    .line-5 { width: 63px; left: 51%; top: 52%; transform: rotate(103deg); }
+    .canvas-hud { position: absolute; z-index: 4; left: 14px; bottom: 12px; display: flex; gap: 6px; }
+    .hud-btn { width: 28px; height: 28px; border: 1px solid var(--ink); background: var(--paper); cursor: pointer; font-weight: 900; }
+    .hud-btn:hover { background: var(--lime); }
+
+    .stage-foot { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; }
+    .stage-foot strong { color: var(--ink); }
+    .nav { display: flex; gap: 8px; }
+    .nav button { border: 1px solid var(--ink); background: transparent; cursor: pointer; min-width: 74px; height: 30px; font-weight: 800; }
+    .nav button:hover { background: var(--yellow); }
+
+    .inspector {
+      border-left: 2px solid var(--ink);
+      padding: 22px 17px 18px;
+      background: #ebe7dd;
+      display: flex;
+      flex-direction: column;
+      gap: 17px;
+    }
+    .inspector-title { font-size: 19px; font-weight: 900; letter-spacing: -.07em; }
+    .inspector-title span { color: var(--coral); }
+    .detail {
+      border: 1px solid var(--ink);
+      background: var(--paper);
+      padding: 12px;
+    }
+    .detail h2 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+    .detail p { margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
+    .detail-toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; border: 0; background: transparent; cursor: pointer; padding: 0; font-weight: 900; }
+    .detail-toggle i { font-style: normal; font-size: 16px; }
+    .detail-copy { display: none; margin-top: 10px; }
+    .detail.open .detail-copy { display: block; }
+    .label-count { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid var(--ink); padding-bottom: 10px; }
+    .label-count strong { font-size: 31px; letter-spacing: -.08em; }
+    .label-count span { color: var(--muted); font-size: 11px; }
+    .label-list { display: grid; gap: 8px; padding-top: 1px; }
+    .label-row { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 8px; font-size: 12px; }
+    .label-row i { width: 9px; height: 9px; border: 1px solid var(--ink); display: block; }
+    .label-row:nth-child(1) i { background: var(--coral); }
+    .label-row:nth-child(2) i { background: var(--lime); }
+    .label-row:nth-child(3) i { background: var(--yellow); }
+    .label-row:nth-child(4) i { background: var(--blue); }
+    .label-row:nth-child(5) i { background: #b7a3e9; }
+    .label-row span:last-child { color: var(--muted); font-size: 10px; }
+    .inspector-note { margin-top: auto; font-size: 10px; line-height: 1.45; color: var(--muted); border-left: 3px solid var(--coral); padding-left: 9px; }
+    .toast { position: fixed; left: 50%; bottom: 20px; z-index: 10; transform: translate(-50%, 80px); background: var(--ink); color: var(--paper); padding: 10px 15px; font-size: 12px; font-weight: 800; transition: transform .25s var(--ease); }
+    .toast.show { transform: translate(-50%, 0); }
+
+    @media (max-width: 1000px) {
+      body { overflow: auto; }
+      .app { min-height: 100vh; }
+      .workspace { grid-template-columns: 170px minmax(0, 1fr); }
+      .inspector { grid-column: 1 / -1; border-left: 0; border-top: 2px solid var(--ink); display: grid; grid-template-columns: 1fr 1fr; }
+      .inspector-note { margin-top: 0; }
+    }
+    @media (max-width: 680px) {
+      .topbar { padding: 12px 15px; }
+      .crumbs { display: none; }
+      .workspace { display: block; }
+      .sidebar { border-right: 0; border-bottom: 2px solid var(--ink); padding: 13px 15px; }
+      .tool-list { display: flex; overflow-x: auto; padding: 2px 0 5px; }
+      .tool { min-width: 130px; }
+      .sidebar-bottom { display: none; }
+      .stage { padding: 17px 15px; min-height: 560px; }
+      .stage-head { align-items: start; flex-direction: column; gap: 8px; }
+      .stage-meta { text-align: left; }
+      .canvas-wrap { min-height: 390px; }
+      .inspector { display: block; padding: 17px 15px; }
+      .inspector > * { margin-bottom: 15px; }
+      .inspector-note { margin-bottom: 0; }
+      .save-state { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">A</div><div class="brand-name">annotate <span>/ studio</span></div></div>
+      <div class="crumbs"><span>Projects</span><span>/</span><b>Urban gestures</b><span>/</span><b>04 of 12</b></div>
+      <div class="top-actions"><div class="save-state"><span class="save-dot" id="saveDot"></span><span id="saveText">All changes saved</span></div><button class="save-btn" id="saveBtn">Save work <span aria-hidden="true">↗</span></button></div>
+    </header>
+
+    <main class="workspace">
+      <aside class="sidebar" aria-label="Annotation tools">
+        <div>
+          <div class="eyebrow"><span>Make a mark</span><span>01—04</span></div>
+          <div class="section-rule"></div>
+          <div class="tool-list" role="toolbar" aria-label="Choose annotation mode">
+            <button class="tool active" data-tool="label" aria-pressed="true"><span class="tool-icon">+</span><span class="tool-copy"><strong>Label</strong><small>name a gesture</small></span></button>
+            <button class="tool" data-tool="box" aria-pressed="false"><span class="tool-icon">□</span><span class="tool-copy"><strong>Box</strong><small>frame a detail</small></span></button>
+            <button class="tool" data-tool="point" aria-pressed="false"><span class="tool-icon">•</span><span class="tool-copy"><strong>Point</strong><small>mark a moment</small></span></button>
+            <button class="tool" data-tool="note" aria-pressed="false"><span class="tool-icon">≡</span><span class="tool-copy"><strong>Note</strong><small>leave a thought</small></span></button>
+          </div>
+        </div>
+        <div class="sidebar-bottom">
+          <div class="progress-wrap"><div class="progress-label"><span>Set progress</span><strong id="progressText">62%</strong></div><div class="progress-bar" aria-label="62 percent complete"><div class="progress-fill" id="progressFill"></div></div></div>
+          <div class="shortcut"><kbd>⌘</kbd> <kbd>S</kbd> to save<br><kbd>⌘</kbd> <kbd>Z</kbd> to undo last mark</div>
+        </div>
+      </aside>
+
+      <section class="stage" aria-label="Annotate canvas">
+        <div class="stage-head"><h1>Find the <em>human</em><br>signal.</h1><div class="stage-meta"><strong>City / motion / memory</strong>Frame 04 — 12 labels requested<br>Use the image as your own index.</div></div>
+        <div class="canvas-wrap" id="canvas">
+          <svg class="mock-image" viewBox="0 0 1000 580" role="img" aria-label="Abstract colorful city scene with a person in motion" preserveAspectRatio="xMidYMid slice">
+            <rect width="1000" height="580" fill="#d4dfc8"/>
+            <path d="M0 475 L0 275 L85 275 L85 340 L145 340 L145 205 L225 205 L225 315 L292 315 L292 170 L388 170 L388 293 L443 293 L443 223 L524 223 L524 341 L605 341 L605 135 L690 135 L690 300 L756 300 L756 188 L850 188 L850 273 L916 273 L916 107 L1000 107 L1000 580 L0 580Z" fill="#f4b83e" stroke="#141414" stroke-width="4"/>
+            <path d="M0 475 L0 353 L65 353 L65 420 L130 420 L130 312 L190 312 L190 398 L265 398 L265 274 L329 274 L329 385 L401 385 L401 316 L470 316 L470 423 L548 423 L548 257 L621 257 L621 379 L702 379 L702 301 L775 301 L775 401 L848 401 L848 259 L929 259 L929 360 L1000 360 L1000 580 L0 580Z" fill="#3466f6" stroke="#141414" stroke-width="4"/>
+            <path d="M0 507 Q180 432 354 511 T700 484 T1000 505 V580 H0Z" fill="#161616"/>
+            <path d="M180 480 C200 436 217 409 237 385 C257 361 267 328 293 310 C320 291 357 303 364 333 C371 363 351 393 340 416 L319 459 L365 480Z" fill="#ff745f" stroke="#141414" stroke-width="5"/>
+            <circle cx="323" cy="285" r="26" fill="#ff745f" stroke="#141414" stroke-width="5"/>
+            <path d="M310 312 Q272 334 251 371 M344 316 Q388 339 419 365 M262 370 L226 433 M346 382 L385 451" fill="none" stroke="#141414" stroke-width="14" stroke-linecap="round"/>
+            <path d="M235 434 L204 490 M383 450 L416 490" fill="none" stroke="#141414" stroke-width="10" stroke-linecap="round"/>
+            <path d="M412 365 Q520 303 655 342" fill="none" stroke="#d8f45a" stroke-width="22" stroke-linecap="round"/>
+            <path d="M510 414 Q625 367 790 410" fill="none" stroke="#ff745f" stroke-width="17" stroke-linecap="round"/>
+            <circle cx="790" cy="410" r="18" fill="#ffd34d" stroke="#141414" stroke-width="4"/>
+            <path d="M733 110 l22 51 52 4 -40 32 12 51 -46 -27 -45 27 12 -51 -40 -32 52 -4Z" fill="#d8f45a" stroke="#141414" stroke-width="4"/>
+            <text x="38" y="535" fill="#f2efe7" font-size="15" font-family="Arial" font-weight="700" letter-spacing="3">A BODY IN PUBLIC SPACE</text>
+          </svg>
+          <span class="pin-line line-1"></span><span class="pin-line line-2"></span><span class="pin-line line-3"></span><span class="pin-line line-4"></span><span class="pin-line line-5"></span>
+          <button class="annotation tag-1" data-label="kinetic" data-color="coral" aria-label="Select label kinetic">kinetic</button>
+          <button class="annotation tag-2" data-label="loud color" data-color="lime" aria-label="Select label loud color">loud color</button>
+          <button class="annotation tag-3" data-label="shared space" data-color="yellow" aria-label="Select label shared space">shared space</button>
+          <button class="annotation tag-4" data-label="soft collision" data-color="blue" aria-label="Select label soft collision">soft collision</button>
+          <button class="annotation tag-5" data-label="human scale" data-color="coral" aria-label="Select label human scale">human scale</button>
+          <div class="canvas-hud"><button class="hud-btn" id="zoomOut" aria-label="Zoom out">−</button><button class="hud-btn" id="zoomIn" aria-label="Zoom in">+</button><button class="hud-btn" id="undoBtn" aria-label="Undo last annotation">↶</button></div>
+        </div>
+        <div class="stage-foot"><span><strong id="toolStatus">Label mode</strong> — click a card to reveal its detail</span><div class="nav"><button id="prevBtn" aria-label="Previous frame">← Prev</button><button id="nextBtn" aria-label="Next frame">Next →</button></div></div>
+      </section>
+
+      <aside class="inspector" aria-label="Label details">
+        <div class="inspector-title">The <span>index</span><br>of feeling.</div>
+        <div class="detail" id="detailPanel"><button class="detail-toggle" id="detailToggle" aria-expanded="false"><span>Selected label</span><i>+</i></button><div class="detail-copy" id="detailCopy">Click one of the bright cards to inspect the visual decision behind it.</div></div>
+        <div class="detail"><div class="label-count"><span>Labels on frame</span><strong id="labelCount">05</strong></div><div class="label-list"><div class="label-row"><i></i><span>kinetic</span><span>01</span></div><div class="label-row"><i></i><span>loud color</span><span>02</span></div><div class="label-row"><i></i><span>shared space</span><span>03</span></div><div class="label-row"><i></i><span>soft collision</span><span>04</span></div><div class="label-row"><i></i><span>human scale</span><span>05</span></div></div></div>
+        <div class="inspector-note">A good label does not describe the picture. It gives the picture a second life.</div>
+      </aside>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const labels = [...document.querySelectorAll('.annotation')];
+    const toast = document.getElementById('toast');
+    const detailPanel = document.getElementById('detailPanel');
+    const detailCopy = document.getElementById('detailCopy');
+    const labelCount = document.getElementById('labelCount');
+    const saveDot = document.getElementById('saveDot');
+    const saveText = document.getElementById('saveText');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    let selected = null;
+    let zoom = 1;
+    let currentFrame = 4;
+
+    const details = {
+      kinetic: 'The figure is caught between two steps. Keep the label moving, too: it should feel like a verb.',
+      'loud color': 'The lime star cuts through the city like a shout. Color is doing the pointing before language arrives.',
+      'shared space': 'The blue and ochre bands overlap without asking permission. A useful label can hold that tension.',
+      'soft collision': 'Two bright paths meet, but nothing breaks. Notice how the image makes contact feel generous.',
+      'human scale': 'The body is small against the architecture, yet it is the only thing with a pulse. Scale becomes a feeling.'
+    };
+
+    function flash(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(flash.timer);
+      flash.timer = setTimeout(() => toast.classList.remove('show'), 1900);
+    }
+    function markUnsaved() {
+      saveDot.classList.add('unsaved');
+      saveText.textContent = 'Unsaved changes';
+    }
+    labels.forEach(label => label.addEventListener('click', () => {
+      labels.forEach(item => item.classList.remove('selected'));
+      label.classList.add('selected');
+      selected = label.dataset.label;
+      detailCopy.textContent = details[selected];
+      detailPanel.classList.add('open');
+      document.getElementById('detailToggle').setAttribute('aria-expanded', 'true');
+      document.querySelector('#detailToggle i').textContent = '−';
+      flash('Reading “' + selected + '”');
+    }));
+
+    document.querySelectorAll('.tool').forEach(tool => tool.addEventListener('click', () => {
+      document.querySelectorAll('.tool').forEach(item => { item.classList.remove('active'); item.setAttribute('aria-pressed', 'false'); });
+      tool.classList.add('active'); tool.setAttribute('aria-pressed', 'true');
+      document.getElementById('toolStatus').textContent = tool.querySelector('strong').textContent + ' mode';
+      markUnsaved();
+      flash(tool.querySelector('strong').textContent + ' mode ready');
+    }));
+
+    document.getElementById('detailToggle').addEventListener('click', () => {
+      const open = detailPanel.classList.toggle('open');
+      document.getElementById('detailToggle').setAttribute('aria-expanded', String(open));
+      document.querySelector('#detailToggle i').textContent = open ? '−' : '+';
+    });
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      saveDot.classList.remove('unsaved'); saveText.textContent = 'All changes saved'; flash('Work saved locally');
+    });
+    document.getElementById('undoBtn').addEventListener('click', () => {
+      const last = labels.find(item => item.style.display !== 'none');
+      if (!last) return flash('Nothing left to undo');
+      last.style.display = 'none';
+      labelCount.textContent = String(Math.max(0, Number(labelCount.textContent) - 1)).padStart(2, '0');
+      const progress = Math.max(0, Number(progressText.textContent.replace('%', '')) - 5);
+      progressText.textContent = progress + '%'; progressFill.style.width = progress + '%';
+      markUnsaved(); flash('Last mark removed');
+    });
+    function setZoom(next) {
+      zoom = Math.min(1.18, Math.max(.88, next));
+      document.querySelector('.mock-image').style.transform = 'scale(' + zoom + ')';
+      flash('Canvas ' + Math.round(zoom * 100) + '%');
+    }
+    document.getElementById('zoomIn').addEventListener('click', () => setZoom(zoom + .05));
+    document.getElementById('zoomOut').addEventListener('click', () => setZoom(zoom - .05));
+    document.getElementById('prevBtn').addEventListener('click', () => { currentFrame = Math.max(1, currentFrame - 1); flash('Frame ' + String(currentFrame).padStart(2, '0') + ' selected'); });
+    document.getElementById('nextBtn').addEventListener('click', () => { currentFrame = Math.min(12, currentFrame + 1); flash('Frame ' + String(currentFrame).padStart(2, '0') + ' selected'); });
+    document.addEventListener('keydown', event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') { event.preventDefault(); document.getElementById('saveBtn').click(); }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); document.getElementById('undoBtn').click(); }
+    });
+  </script>
+</body>
+</html>

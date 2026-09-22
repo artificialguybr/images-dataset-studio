@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate / Label — Paul Rand</title>
+  <style>
+    :root {
+      --paper: #f3f0e8;
+      --warm: #e7e1d4;
+      --ink: #171717;
+      --red: #e84432;
+      --blue: #265ba6;
+      --yellow: #f4c83d;
+      --green: #3c8d63;
+      --white: #fffdf7;
+      --line: 2px solid var(--ink);
+      --hairline: 1px solid rgba(23,23,23,.28);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Arial, Helvetica, sans-serif;
+      --ease: cubic-bezier(.22,.8,.26,1);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+    button { color: inherit; font: inherit; cursor: pointer; }
+    button:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .shell {
+      width: min(100%, 1568px);
+      height: 100vh;
+      min-height: 640px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: 76px minmax(0, 1fr) 42px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      border-bottom: var(--line);
+      background: var(--paper);
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: var(--yellow);
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 24px;
+      line-height: 1;
+      transform: rotate(-8deg);
+    }
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      right: -7px;
+      bottom: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 2px solid var(--ink);
+    }
+    .brand-name { font-size: 21px; font-weight: 900; letter-spacing: -.04em; }
+    .brand-name span { color: var(--red); }
+    .header-center {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .header-center .stripe { width: 30px; height: 8px; background: var(--blue); }
+    .header-center .stripe:nth-child(2) { background: var(--yellow); }
+    .header-center .stripe:nth-child(3) { background: var(--red); }
+    .header-actions { display: flex; align-items: center; gap: 18px; }
+    .autosave { display: flex; gap: 8px; align-items: center; font: 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .save-dot { width: 9px; height: 9px; background: var(--green); border-radius: 50%; }
+    .save-dot.saving { background: var(--yellow); animation: blink .7s steps(2) infinite; }
+    .save-button {
+      border: var(--line);
+      padding: 10px 15px;
+      background: var(--yellow);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      transition: transform .18s var(--ease), background .18s var(--ease);
+    }
+    .save-button:hover { transform: translate(-2px,-2px); background: var(--red); }
+    @keyframes blink { 50% { opacity: .35; } }
+
+    main { min-height: 0; display: grid; grid-template-columns: 112px minmax(0,1fr) 320px; }
+    .rail {
+      position: relative;
+      border-right: var(--line);
+      background: var(--blue);
+      color: var(--white);
+      padding: 22px 17px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .rail::before { content: ""; position: absolute; top: 88px; left: -24px; width: 106px; height: 106px; border-radius: 50%; border: 18px solid var(--yellow); opacity: .95; }
+    .rail::after { content: ""; position: absolute; bottom: 104px; right: -28px; width: 78px; height: 78px; background: var(--red); transform: rotate(45deg); }
+    .rail-label { position: relative; z-index: 1; font: 10px var(--mono); letter-spacing: .16em; text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg); }
+    .rail-index { position: relative; z-index: 1; font-size: 55px; line-height: .9; font-weight: 900; letter-spacing: -.09em; }
+    .rail-index small { display: block; margin-top: 8px; color: var(--yellow); font: 10px var(--mono); letter-spacing: .05em; }
+
+    .workspace { min-width: 0; display: grid; grid-template-rows: 58px minmax(0,1fr); background: var(--warm); }
+    .workspace-bar { display: flex; align-items: center; justify-content: space-between; padding: 0 22px; border-bottom: var(--line); }
+    .crumb { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .crumb strong { font-size: 15px; white-space: nowrap; }
+    .crumb .slash { color: var(--red); font-size: 21px; font-weight: 900; }
+    .crumb small { color: rgba(23,23,23,.62); font: 10px var(--mono); letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-meta { display: flex; align-items: center; gap: 15px; font: 10px var(--mono); letter-spacing: .05em; white-space: nowrap; }
+    .bar-meta b { padding: 5px 7px; border: 1px solid var(--ink); background: var(--white); }
+    .bar-meta b:first-child { background: var(--red); color: var(--white); }
+    .stage { min-height: 0; padding: 19px 22px 21px; display: grid; grid-template-rows: auto minmax(0,1fr); gap: 13px; }
+    .stage-heading { display: flex; align-items: end; justify-content: space-between; }
+    .stage-heading h1 { margin: 0; font-size: clamp(22px,2.15vw,33px); line-height: .95; letter-spacing: -.065em; font-weight: 900; }
+    .stage-heading h1 em { color: var(--red); font-style: normal; }
+    .stage-heading p { margin: 0 0 2px; color: rgba(23,23,23,.68); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .canvas-frame { min-height: 0; display: grid; grid-template-rows: 39px minmax(0,1fr); border: var(--line); background: var(--white); box-shadow: 7px 7px 0 var(--ink); }
+    .canvas-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 11px; border-bottom: var(--line); background: var(--paper); }
+    .tool-group { display: flex; gap: 5px; }
+    .tool {
+      min-width: 31px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border: 1px solid transparent;
+      background: transparent;
+      font: 11px var(--mono);
+      font-weight: 700;
+      transition: background .18s var(--ease), color .18s var(--ease), transform .18s var(--ease);
+    }
+    .tool:hover { border-color: var(--ink); transform: translateY(-1px); }
+    .tool.active { border-color: var(--ink); background: var(--ink); color: var(--yellow); }
+    .tool svg { width: 16px; height: 16px; fill: currentColor; }
+    .canvas-readout { display: flex; gap: 14px; color: rgba(23,23,23,.62); font: 9px var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+    .canvas-wrap { min-height: 0; position: relative; display: grid; place-items: center; padding: 20px; overflow: hidden; background: #d7d0c0; }
+    .canvas-wrap::before { content: ""; position: absolute; inset: 0; opacity: .27; background-image: radial-gradient(var(--ink) .7px, transparent .8px); background-size: 9px 9px; pointer-events: none; }
+    .mock-image { position: relative; width: min(100%, 740px); aspect-ratio: 1.45 / 1; border: var(--line); background: #edebe3; box-shadow: 5px 5px 0 rgba(23,23,23,.8); overflow: hidden; }
+    .mock-image svg { width: 100%; height: 100%; display: block; }
+    .target { position: absolute; border: 2px solid var(--red); background: rgba(232,68,50,.11); cursor: pointer; transition: background .18s var(--ease), border-color .18s var(--ease); }
+    .target:hover, .target.selected { background: rgba(244,200,61,.35); border-color: var(--ink); }
+    .target.selected::after { content: ""; position: absolute; width: 8px; height: 8px; top: -5px; left: -5px; background: var(--yellow); border: 2px solid var(--ink); }
+    .target span { position: absolute; left: -2px; top: -22px; padding: 4px 6px; color: var(--white); background: var(--red); font: 9px var(--mono); font-weight: 700; white-space: nowrap; }
+    .target.selected span { color: var(--ink); background: var(--yellow); }
+    .target.one { left: 13%; top: 27%; width: 27%; height: 48%; }
+    .target.two { left: 50%; top: 20%; width: 19%; height: 30%; }
+    .target.three { left: 73%; top: 56%; width: 17%; height: 25%; }
+    .canvas-note { position: absolute; right: 26px; bottom: 19px; display: flex; align-items: center; gap: 7px; font: 9px var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+    .canvas-note i { width: 12px; height: 12px; display: block; border: 2px solid var(--red); background: var(--yellow); }
+
+    .inspector { min-width: 0; border-left: var(--line); background: var(--paper); display: grid; grid-template-rows: auto minmax(0,1fr) auto; }
+    .inspector-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 19px 15px; border-bottom: var(--line); }
+    .inspector-head h2 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -.04em; }
+    .inspector-head h2 span { color: var(--red); }
+    .tiny-button { border: 1px solid var(--ink); background: transparent; padding: 5px 7px; font: 9px var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+    .tiny-button:hover { background: var(--ink); color: var(--yellow); }
+    .label-list { min-height: 0; overflow: auto; padding: 12px 19px; }
+    .label-list::-webkit-scrollbar { width: 7px; }
+    .label-list::-webkit-scrollbar-thumb { background: var(--ink); }
+    .label-row { display: grid; grid-template-columns: 23px minmax(0,1fr) auto; align-items: center; gap: 10px; min-height: 54px; border-bottom: var(--hairline); }
+    .label-row:last-child { border-bottom: 0; }
+    .label-swatch { width: 19px; height: 19px; border: 2px solid var(--ink); }
+    .label-row:nth-child(1) .label-swatch { background: var(--red); }
+    .label-row:nth-child(2) .label-swatch { background: var(--blue); }
+    .label-row:nth-child(3) .label-swatch { background: var(--yellow); }
+    .label-row:nth-child(4) .label-swatch { background: var(--green); }
+    .label-info { min-width: 0; }
+    .label-name { display: block; font-size: 13px; font-weight: 900; }
+    .label-meta { display: block; margin-top: 3px; color: rgba(23,23,23,.6); font: 9px var(--mono); text-transform: uppercase; letter-spacing: .04em; }
+    .label-count { font: 11px var(--mono); font-weight: 700; }
+    .label-row button { grid-column: 1 / -1; display: none; }
+    .detail {
+      margin: 0 19px 17px;
+      border: var(--line);
+      background: var(--white);
+      overflow: hidden;
+      transition: max-height .25s var(--ease);
+    }
+    .detail.closed { max-height: 36px; }
+    .detail.open { max-height: 130px; }
+    .detail-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; border: 0; background: var(--ink); color: var(--white); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+    .detail-toggle b { color: var(--yellow); font-size: 14px; line-height: .7; }
+    .detail-body { padding: 11px 10px 12px; font-size: 11px; line-height: 1.45; }
+    .detail-body strong { color: var(--red); }
+    .inspector-foot { display: flex; align-items: center; justify-content: space-between; padding: 12px 19px; border-top: var(--line); background: var(--yellow); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+    .inspector-foot button { border: 0; background: transparent; padding: 0; font: inherit; text-decoration: underline; }
+    .inspector-foot button:hover { color: var(--red); }
+    .toast { position: fixed; left: 50%; bottom: 53px; z-index: 4; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; padding: 10px 15px; border: var(--line); background: var(--ink); color: var(--yellow); font: 11px var(--mono); transition: opacity .2s var(--ease), transform .2s var(--ease); }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    footer { display: flex; align-items: center; justify-content: space-between; border-top: var(--line); padding: 0 28px; font: 10px var(--mono); text-transform: uppercase; letter-spacing: .06em; background: var(--paper); }
+    .footer-left, .footer-right { display: flex; align-items: center; gap: 15px; }
+    .footer-mark { width: 8px; height: 8px; background: var(--red); transform: rotate(45deg); }
+    .nav-buttons { display: flex; gap: 4px; }
+    .nav-buttons button { width: 26px; height: 24px; border: 1px solid var(--ink); background: transparent; font-weight: 900; }
+    .nav-buttons button:hover { background: var(--ink); color: var(--yellow); }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .shell { height: auto; min-height: 100vh; }
+      main { grid-template-columns: 72px minmax(0,1fr); }
+      .inspector { grid-column: 1 / -1; border-left: 0; border-top: var(--line); min-height: 310px; }
+      .header-center { display: none; }
+    }
+    @media (max-width: 560px) {
+      .shell { grid-template-rows: 68px auto 42px; }
+      header { padding: 0 16px; }
+      .brand-name { font-size: 18px; }
+      .autosave { display: none; }
+      .rail { padding: 17px 10px; }
+      .rail-index { font-size: 42px; }
+      .workspace-bar { padding: 0 14px; }
+      .bar-meta { display: none; }
+      .stage { padding: 16px 14px 18px; }
+      .stage-heading { align-items: start; flex-direction: column; gap: 7px; }
+      .canvas-wrap { padding: 11px; }
+      .canvas-readout { display: none; }
+      footer { padding: 0 16px; }
+      .footer-right { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand" aria-label="Annotate label">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div class="brand-name">annotate<span>/</span>label</div>
+      </div>
+      <div class="header-center" aria-hidden="true"><i class="stripe"></i><i class="stripe"></i><i class="stripe"></i></div>
+      <div class="header-actions">
+        <div class="autosave"><i class="save-dot" id="saveDot"></i><span id="saveState">all changes saved</span></div>
+        <button class="save-button" id="saveButton" type="button">Save set <span aria-hidden="true">↗</span></button>
+      </div>
+    </header>
+
+    <main>
+      <aside class="rail" aria-label="Set navigation">
+        <div class="rail-label">set / objects / 04</div>
+        <div class="rail-index"><span id="frameNumber">04</span><small>of 12</small></div>
+      </aside>
+
+      <section class="workspace" aria-label="Annotation workspace">
+        <div class="workspace-bar">
+          <div class="crumb"><strong>OBJECTS</strong><span class="slash">/</span><small>still life · studio light · 2048 × 1408</small></div>
+          <div class="bar-meta"><b>IN PROGRESS</b><span id="annotationTotal">03 MARKS</span></div>
+        </div>
+        <div class="stage">
+          <div class="stage-heading">
+            <h1>Find the <em>signal.</em></h1>
+            <p>one frame · three decisions · no noise</p>
+          </div>
+          <div class="canvas-frame">
+            <div class="canvas-toolbar">
+              <div class="tool-group" aria-label="Annotation tools">
+                <button class="tool active" type="button" data-tool="select" aria-label="Select tool" aria-pressed="true"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1.5 13.5 8l-5 1.2 2.8 4.3-1.7 1-2.7-4.3-3.2 3.5L3 1.5Z"/></svg></button>
+                <button class="tool" type="button" data-tool="box" aria-label="Box tool" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2h12v12H2V2Zm2 2v8h8V4H4Z"/></svg></button>
+                <button class="tool" type="button" data-tool="pan" aria-label="Pan tool" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 7V3.5a1 1 0 0 1 2 0V7h.5V2.5a1 1 0 0 1 2 0V7H10V3.5a1 1 0 0 1 2 0v5.8l.7-.9a1.3 1.3 0 0 1 2.1 1.5l-2.2 3a3.3 3.3 0 0 1-2.7 1.4H7.6a3 3 0 0 1-2.5-1.3L3 10a1.4 1.4 0 0 1 2-1.8V7Z"/></svg></button>
+                <button class="tool" type="button" data-tool="erase" aria-label="Erase tool" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m9.8 2 4.2 4.2a1.5 1.5 0 0 1 0 2.1L9 13.3H4.8L2 10.5 9.8 2ZM8 4.8l-3.9 3.9 2.8 2.8h1.3l3.9-3.9L8 4.8Z"/></svg></button>
+              </div>
+              <div class="canvas-readout"><span id="toolReadout">select / object</span><span>100%</span><span>↗ fit</span></div>
+            </div>
+            <div class="canvas-wrap">
+              <div class="mock-image" aria-label="Still life image with three annotated objects">
+                <svg viewBox="0 0 740 510" role="img" aria-labelledby="mockTitle mockDesc">
+                  <title id="mockTitle">Abstract still life on a blue table</title>
+                  <desc id="mockDesc">A red apple, a yellow vase and a blue book arranged under a graphic sun.</desc>
+                  <rect width="740" height="510" fill="#f0eee5"/>
+                  <rect y="333" width="740" height="177" fill="#265ba6"/>
+                  <rect y="327" width="740" height="8" fill="#171717"/>
+                  <circle cx="580" cy="112" r="72" fill="#f4c83d" stroke="#171717" stroke-width="7"/>
+                  <path d="M0 220H740" stroke="#171717" stroke-width="7"/>
+                  <path d="M55 72 685 278" stroke="#e84432" stroke-width="17"/>
+                  <path d="M46 75 677 281" stroke="#f4c83d" stroke-width="5"/>
+                  <rect x="70" y="263" width="192" height="67" rx="2" fill="#171717"/>
+                  <rect x="82" y="247" width="192" height="67" rx="2" fill="#fffdf7" stroke="#171717" stroke-width="6" transform="rotate(-9 82 247)"/>
+                  <path d="m112 286 115-18" stroke="#265ba6" stroke-width="8"/>
+                  <path d="m114 301 82-13" stroke="#e84432" stroke-width="6"/>
+                  <path d="M323 312c-4-55 4-106 28-122 18-12 48-12 66 0 24 16 32 67 28 122Z" fill="#f4c83d" stroke="#171717" stroke-width="7"/>
+                  <path d="M369 185c-2-26 5-39 16-52" stroke="#171717" stroke-width="8" fill="none"/>
+                  <path d="M385 138c18-9 30-1 34 12-15-1-27-4-34-12Z" fill="#3c8d63" stroke="#171717" stroke-width="5"/>
+                  <ellipse cx="198" cy="340" rx="101" ry="15" fill="#171717" opacity=".5"/>
+                  <ellipse cx="382" cy="340" rx="81" ry="14" fill="#171717" opacity=".5"/>
+                  <path d="M535 321c-14-24-13-56 2-78 12-18 30-25 49-23 18 2 34 15 41 34 11 31-2 56-19 74Z" fill="#e84432" stroke="#171717" stroke-width="7"/>
+                  <path d="M579 224c-6-22 3-38 19-47" stroke="#171717" stroke-width="8" fill="none"/>
+                  <path d="M597 177c17-8 34 1 39 13-16 4-29 0-39-13Z" fill="#3c8d63" stroke="#171717" stroke-width="5"/>
+                  <ellipse cx="579" cy="336" rx="62" ry="13" fill="#171717" opacity=".5"/>
+                  <path d="M665 362h40" stroke="#f4c83d" stroke-width="8"/>
+                  <path d="M675 380h24" stroke="#f4c83d" stroke-width="8"/>
+                </svg>
+                <button class="target one selected" type="button" data-object="book" aria-label="Book annotation, selected"><span>book · 01</span></button>
+                <button class="target two" type="button" data-object="vase" aria-label="Vase annotation"><span>vase · 02</span></button>
+                <button class="target three" type="button" data-object="apple" aria-label="Apple annotation"><span>apple · 03</span></button>
+              </div>
+              <div class="canvas-note"><i aria-hidden="true"></i> selected mark / book</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="Labels and annotation details">
+        <div class="inspector-head"><h2>Label <span>index</span></h2><button class="tiny-button" id="addLabel" type="button">+ class</button></div>
+        <div class="label-list" id="labelList">
+          <div class="label-row" data-label="book"><i class="label-swatch" aria-hidden="true"></i><div class="label-info"><span class="label-name">book</span><span class="label-meta">selected · 98.4%</span></div><span class="label-count">01</span></div>
+          <div class="label-row" data-label="vase"><i class="label-swatch" aria-hidden="true"></i><div class="label-info"><span class="label-name">vase</span><span class="label-meta">confirmed · 96.1%</span></div><span class="label-count">01</span></div>
+          <div class="label-row" data-label="apple"><i class="label-swatch" aria-hidden="true"></i><div class="label-info"><span class="label-name">apple</span><span class="label-meta">confirmed · 94.8%</span></div><span class="label-count">01</span></div>
+          <div class="label-row" data-label="leaf"><i class="label-swatch" aria-hidden="true"></i><div class="label-info"><span class="label-name">leaf</span><span class="label-meta">suggested · review</span></div><span class="label-count">02</span></div>
+        </div>
+        <div class="detail open" id="detail">
+          <button class="detail-toggle" id="detailToggle" type="button" aria-expanded="true">Selection details <b>−</b></button>
+          <div class="detail-body"><strong id="detailName">book</strong> · bounding box is clean. Keep the whole silhouette; spine edge is part of the object. <br><span style="font-family:var(--mono);font-size:9px;color:rgba(23,23,23,.6)">shortcut: 1 / confirm with enter</span></div>
+        </div>
+        <div class="inspector-foot"><span id="markStatus">3 marks / ready</span><button id="undoButton" type="button">↶ undo</button></div>
+      </aside>
+    </main>
+
+    <footer>
+      <div class="footer-left"><i class="footer-mark" aria-hidden="true"></i><span id="footerMessage">set 04 · visual pass</span></div>
+      <div class="footer-right"><span>frame <b id="footerFrame">04</b> / 12</span><div class="nav-buttons"><button id="prevButton" type="button" aria-label="Previous frame">←</button><button id="nextButton" type="button" aria-label="Next frame">→</button></div></div>
+    </footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const $ = (selector, parent = document) => parent.querySelector(selector);
+    const $$ = (selector, parent = document) => [...parent.querySelectorAll(selector)];
+    const toast = (message) => {
+      const node = $('#toast');
+      node.textContent = message;
+      node.classList.add('show');
+      clearTimeout(window.toastTimer);
+      window.toastTimer = setTimeout(() => node.classList.remove('show'), 1800);
+    };
+    const selectObject = (name) => {
+      $$('.target').forEach((target) => {
+        const active = target.dataset.object === name;
+        target.classList.toggle('selected', active);
+        target.setAttribute('aria-label', `${target.dataset.object} annotation${active ? ', selected' : ''}`);
+      });
+      $$('.label-row').forEach((row) => {
+        const active = row.dataset.label === name;
+        row.style.background = active ? 'var(--yellow)' : '';
+        const meta = $('.label-meta', row);
+        if (active && meta) meta.textContent = 'selected · 98.4%';
+      });
+      $('#detailName').textContent = name;
+      $('.canvas-note').innerHTML = `<i aria-hidden="true"></i> selected mark / ${name}`;
+      $('#markStatus').textContent = `3 marks / ${name} selected`;
+    };
+    $$('.target').forEach((target) => target.addEventListener('click', () => selectObject(target.dataset.object)));
+    $$('.label-row').forEach((row) => row.addEventListener('click', () => selectObject(row.dataset.label)));
+
+    $$('.tool').forEach((tool) => tool.addEventListener('click', () => {
+      $$('.tool').forEach((item) => { item.classList.remove('active'); item.setAttribute('aria-pressed', 'false'); });
+      tool.classList.add('active');
+      tool.setAttribute('aria-pressed', 'true');
+      const toolName = tool.dataset.tool;
+      $('#toolReadout').textContent = `${toolName} / object`;
+      toast(`${toolName} tool active`);
+    }));
+
+    $('#detailToggle').addEventListener('click', () => {
+      const detail = $('#detail');
+      const open = detail.classList.toggle('open');
+      detail.classList.toggle('closed', !open);
+      $('#detailToggle').setAttribute('aria-expanded', String(open));
+      $('.detail-toggle b').textContent = open ? '−' : '+';
+    });
+    $('#undoButton').addEventListener('click', () => { toast('Last mark restored'); $('#markStatus').textContent = '3 marks / restored'; });
+    $('#addLabel').addEventListener('click', () => {
+      const name = prompt('Name the new class', 'shape');
+      if (!name || !name.trim()) return;
+      const label = name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_-]/g, '');
+      if (!label) return;
+      const row = document.createElement('div');
+      row.className = 'label-row'; row.dataset.label = label;
+      row.innerHTML = `<i class="label-swatch" aria-hidden="true" style="background:var(--green)"></i><div class="label-info"><span class="label-name">${label}</span><span class="label-meta">new · unconfirmed</span></div><span class="label-count">00</span>`;
+      row.addEventListener('click', () => selectObject(label));
+      $('#labelList').append(row);
+      toast(`Class added: ${label}`);
+    });
+    $('#saveButton').addEventListener('click', () => {
+      const dot = $('#saveDot'); dot.classList.add('saving'); $('#saveState').textContent = 'saving set…';
+      setTimeout(() => { dot.classList.remove('saving'); $('#saveState').textContent = 'all changes saved'; toast('Set 04 saved locally'); }, 650);
+    });
+    let frame = 4;
+    const changeFrame = (amount) => {
+      frame = Math.max(1, Math.min(12, frame + amount));
+      const value = String(frame).padStart(2, '0');
+      $('#frameNumber').textContent = value; $('#footerFrame').textContent = value;
+      $('#footerMessage').textContent = `set ${value} · visual pass`;
+      toast(`Frame ${value} ready`);
+    };
+    $('#prevButton').addEventListener('click', () => changeFrame(-1));
+    $('#nextButton').addEventListener('click', () => changeFrame(1));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') changeFrame(-1);
+      if (event.key === 'ArrowRight') changeFrame(1);
+      if (event.key === 'Enter' && document.activeElement.classList.contains('target')) toast('Annotation confirmed');
+    });
+  </script>
+</body>
+</html>

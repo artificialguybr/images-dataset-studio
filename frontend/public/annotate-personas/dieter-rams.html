@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Annotate / Dieter Rams</title>
+  <style>
+    :root {
+      --paper: #f4f2ec;
+      --panel: #fbfaf6;
+      --ink: #202321;
+      --muted: #747872;
+      --line: #d7d8d1;
+      --line-strong: #b8bbb3;
+      --blue: #315c74;
+      --orange: #d66d3b;
+      --yellow: #cfad49;
+      --green: #698875;
+      --red: #ae574a;
+      --space-1: 6px;
+      --space-2: 10px;
+      --space-3: 14px;
+      --space-4: 20px;
+      --space-5: 28px;
+      --space-6: 36px;
+      --radius: 2px;
+      --ease: 160ms ease-out;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .01em;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+    .app { height: 100vh; min-height: 620px; display: grid; grid-template-rows: 58px minmax(0, 1fr); overflow: hidden; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 214px 1fr auto;
+      align-items: center;
+      padding: 0 var(--space-5);
+      border-bottom: 1px solid var(--line-strong);
+      background: var(--panel);
+    }
+    .wordmark { display: flex; align-items: center; gap: 11px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .wordmark-mark { width: 23px; height: 23px; display: grid; place-items: center; border: 2px solid var(--ink); font-size: 12px; letter-spacing: 0; }
+    .top-meta { display: flex; align-items: center; gap: var(--space-4); color: var(--muted); }
+    .top-meta strong { color: var(--ink); font-weight: 600; }
+    .top-status { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .top-actions { display: flex; align-items: center; gap: var(--space-3); }
+    .save-button { border: 1px solid var(--ink); background: var(--ink); color: var(--panel); padding: 8px 17px; border-radius: var(--radius); cursor: pointer; font-weight: 600; transition: background var(--ease), color var(--ease); }
+    .save-button:hover { background: var(--blue); border-color: var(--blue); }
+    .save-button.saved { background: transparent; color: var(--ink); }
+    .operator { width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid var(--line-strong); font-size: 10px; font-weight: 700; }
+
+    .layout { min-height: 0; display: grid; grid-template-columns: 214px minmax(0, 1fr) 294px; }
+    .rail, .inspector { min-height: 0; background: var(--panel); }
+    .rail { border-right: 1px solid var(--line-strong); padding: var(--space-5) 0 var(--space-4); display: flex; flex-direction: column; }
+    .rail-heading, .inspector-heading { padding: 0 var(--space-5); color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .rail-heading { margin-bottom: 25px; }
+    .dataset { padding: 0 var(--space-5) 21px; border-bottom: 1px solid var(--line); }
+    .dataset-kicker { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .09em; }
+    .dataset-name { margin-top: 5px; font-size: 14px; font-weight: 650; }
+    .dataset-count { margin-top: 3px; color: var(--muted); font-size: 11px; }
+    .queue { padding: 16px var(--space-5); border-bottom: 1px solid var(--line); }
+    .queue-label { display: flex; justify-content: space-between; color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: .1em; }
+    .queue-label strong { color: var(--ink); font-weight: 600; }
+    .queue-bar { height: 3px; margin-top: 9px; background: var(--line); }
+    .queue-bar span { display: block; width: 64%; height: 100%; background: var(--orange); }
+    .label-list { padding: 15px 0; }
+    .label-list-title { padding: 0 var(--space-5) 7px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .11em; }
+    .label-row { width: 100%; display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 9px; padding: 8px var(--space-5); border: 0; border-left: 3px solid transparent; background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+    .label-row:hover { background: var(--paper); }
+    .label-row.active { border-left-color: var(--orange); background: #eeece5; font-weight: 650; }
+    .label-swatch { width: 7px; height: 7px; border-radius: 50%; }
+    .label-count { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .rail-foot { margin-top: auto; padding: 15px var(--space-5) 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .rail-foot kbd { display: inline-block; margin-right: 4px; padding: 1px 4px; border: 1px solid var(--line-strong); color: var(--ink); font-size: 9px; }
+
+    .workspace { min-width: 0; min-height: 0; display: grid; grid-template-rows: 48px minmax(0, 1fr) 38px; background: #e9e8e2; }
+    .workspace-head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-5); border-bottom: 1px solid var(--line-strong); background: var(--paper); }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+    .breadcrumb strong { color: var(--ink); font-weight: 650; }
+    .breadcrumb .slash { color: var(--line-strong); }
+    .frame-id { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 11px; }
+    .canvas-wrap { min-height: 0; padding: var(--space-5); display: flex; }
+    .canvas-stage { position: relative; min-height: 0; flex: 1; border: 1px solid var(--line-strong); background: #d6d6d0; overflow: hidden; }
+    .canvas-stage::before, .canvas-stage::after { content: ""; position: absolute; pointer-events: none; z-index: 1; }
+    .canvas-stage::before { inset: 18px; border: 1px solid rgba(32,35,33,.14); }
+    .canvas-stage::after { left: 50%; top: 18px; bottom: 18px; width: 1px; background: rgba(32,35,33,.08); }
+    .mock-image { display: block; width: 100%; height: 100%; }
+    .annotation { cursor: pointer; }
+    .annotation rect { fill: transparent; stroke-width: 2; stroke-dasharray: 7 4; transition: fill var(--ease), stroke var(--ease); }
+    .annotation text { font: 600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+    .annotation.selected rect { fill: rgba(214,109,59,.1); stroke-width: 3; stroke-dasharray: none; }
+    .annotation .tag { stroke: none; }
+    .annotation[data-label="person"] rect { stroke: var(--blue); }
+    .annotation[data-label="person"] text { fill: var(--blue); }
+    .annotation[data-label="product"] rect { stroke: var(--orange); }
+    .annotation[data-label="product"] text { fill: var(--orange); }
+    .annotation[data-label="background"] rect { stroke: var(--green); }
+    .annotation[data-label="background"] text { fill: var(--green); }
+    .annotation[data-label="detail"] rect { stroke: var(--yellow); }
+    .annotation[data-label="detail"] text { fill: #8b721d; }
+    .annotation .tag + text { fill: var(--panel); }
+    .canvas-help { position: absolute; z-index: 2; left: 27px; top: 26px; color: rgba(32,35,33,.57); font-size: 10px; letter-spacing: .11em; text-transform: uppercase; }
+    .zoom { position: absolute; z-index: 2; right: 27px; bottom: 23px; display: flex; border: 1px solid rgba(32,35,33,.22); background: rgba(244,242,236,.84); }
+    .zoom button { width: 27px; height: 25px; border: 0; border-right: 1px solid rgba(32,35,33,.18); background: transparent; color: var(--ink); cursor: pointer; }
+    .zoom button:last-child { border: 0; }
+    .zoom button:hover { background: var(--paper); }
+    .toolbar { display: flex; align-items: center; gap: 1px; padding: 0 20px; border-top: 1px solid var(--line-strong); background: var(--paper); }
+    .tool { position: relative; width: 29px; height: 27px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+    .tool:hover, .tool.active { color: var(--ink); background: #e5e3dc; }
+    .tool.active::after { content: ""; position: absolute; bottom: -7px; left: 9px; width: 11px; height: 2px; background: var(--orange); }
+    .tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.4; }
+    .toolbar-divider { width: 1px; height: 18px; margin: 0 8px; background: var(--line); }
+    .toolbar-hint { margin-left: auto; color: var(--muted); font-size: 10px; }
+
+    .inspector { border-left: 1px solid var(--line-strong); padding: var(--space-5) 0 var(--space-4); display: flex; flex-direction: column; overflow: hidden; }
+    .inspector-heading { margin-bottom: 23px; }
+    .object-title { padding: 0 var(--space-5) 16px; border-bottom: 1px solid var(--line); }
+    .object-title small { display: block; color: var(--muted); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    .object-title h1 { margin: 6px 0 0; font-size: 21px; line-height: 1.1; font-weight: 500; letter-spacing: -.02em; }
+    .object-title p { margin: 7px 0 0; color: var(--muted); font-size: 11px; }
+    .properties { padding: 17px var(--space-5); border-bottom: 1px solid var(--line); }
+    .property { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 7px 0; border-bottom: 1px solid #e6e5df; }
+    .property:last-child { border-bottom: 0; }
+    .property dt { color: var(--muted); }
+    .property dd { margin: 0; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+    .detail-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 15px var(--space-5); border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); text-align: left; cursor: pointer; }
+    .detail-toggle:hover { background: var(--paper); }
+    .detail-toggle span { font-weight: 650; }
+    .chevron { transition: transform var(--ease); }
+    .detail-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+    .details { padding: 14px var(--space-5); border-bottom: 1px solid var(--line); background: #f5f3ee; }
+    .details[hidden] { display: none; }
+    .details p { margin: 0; color: var(--muted); font-size: 11px; }
+    .details code { color: var(--ink); font-size: 10px; }
+    .annotation-readout { padding: 17px var(--space-5); }
+    .readout-kicker { color: var(--muted); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+    .readout-label { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 14px; font-weight: 650; }
+    .readout-label .label-swatch { width: 8px; height: 8px; }
+    .readout-note { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+    .inspector-foot { margin-top: auto; padding: 15px var(--space-5) 0; border-top: 1px solid var(--line); }
+    .navigation { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .nav-button { display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); cursor: pointer; }
+    .nav-button:hover { background: var(--paper); border-color: var(--ink); }
+    .nav-button:disabled { cursor: not-allowed; opacity: .4; }
+    .nav-button span { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; }
+    .inspector-foot-note { display: flex; justify-content: space-between; margin-top: 11px; color: var(--muted); font-size: 10px; }
+    .inspector-foot-note strong { color: var(--ink); font-weight: 600; }
+
+    @media (max-width: 1060px) {
+      .layout { grid-template-columns: 180px minmax(0, 1fr) 260px; }
+      .topbar { grid-template-columns: 180px 1fr auto; padding: 0 var(--space-4); }
+      .rail-heading, .dataset, .queue, .label-list-title, .label-row, .rail-foot, .inspector-heading, .object-title, .properties, .detail-toggle, .details, .annotation-readout, .inspector-foot { padding-left: 16px; padding-right: 16px; }
+      .canvas-wrap { padding: 16px; }
+    }
+    @media (max-width: 780px) {
+      .app { min-height: 0; height: auto; overflow: visible; }
+      .topbar { grid-template-columns: 1fr auto; height: 58px; }
+      .top-meta { display: none; }
+      .layout { grid-template-columns: 1fr; }
+      .rail { border-right: 0; border-bottom: 1px solid var(--line-strong); }
+      .rail-heading, .dataset, .queue, .label-list-title, .rail-foot { display: none; }
+      .label-list { display: flex; overflow-x: auto; padding: 8px 12px; }
+      .label-row { width: auto; min-width: 100px; border-left: 0; border-bottom: 2px solid transparent; padding: 8px 10px; }
+      .label-row.active { border-bottom-color: var(--orange); }
+      .workspace { min-height: 530px; }
+      .inspector { border-left: 0; border-top: 1px solid var(--line-strong); overflow: visible; }
+      .inspector-foot { padding-bottom: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="wordmark"><span class="wordmark-mark">A</span><span>Annotate / 04</span></div>
+      <div class="top-meta">
+        <span>Dataset <strong>objects / studio set</strong></span>
+        <span class="top-status"><i class="status-dot" aria-hidden="true"></i><span id="saveState">All changes saved</span></span>
+      </div>
+      <div class="top-actions"><button class="save-button saved" id="saveButton" type="button">Save labels</button><span class="operator" aria-label="Operator JM">JM</span></div>
+    </header>
+
+    <main class="layout">
+      <aside class="rail" aria-label="Label set">
+        <div class="rail-heading">Label ledger</div>
+        <div class="dataset"><div class="dataset-kicker">Collection</div><div class="dataset-name">Studio objects</div><div class="dataset-count">12,480 images · v2.4</div></div>
+        <div class="queue"><div class="queue-label"><span>Queue</span><strong>08 / 24</strong></div><div class="queue-bar" aria-label="Queue 64 percent complete"><span></span></div></div>
+        <div class="label-list" id="labelList">
+          <div class="label-list-title">Classes <span aria-hidden="true">·</span> click to assign</div>
+          <button class="label-row active" type="button" data-label="person" aria-pressed="true"><i class="label-swatch" style="background:var(--blue)"></i><span>person</span><span class="label-count">04</span></button>
+          <button class="label-row" type="button" data-label="product" aria-pressed="false"><i class="label-swatch" style="background:var(--orange)"></i><span>product</span><span class="label-count">02</span></button>
+          <button class="label-row" type="button" data-label="background" aria-pressed="false"><i class="label-swatch" style="background:var(--green)"></i><span>background</span><span class="label-count">01</span></button>
+          <button class="label-row" type="button" data-label="detail" aria-pressed="false"><i class="label-swatch" style="background:var(--yellow)"></i><span>detail</span><span class="label-count">03</span></button>
+        </div>
+        <div class="rail-foot"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> select class</div>
+      </aside>
+
+      <section class="workspace" aria-label="Image annotation workspace">
+        <div class="workspace-head"><div class="breadcrumb"><span>Objects</span><span class="slash">/</span><strong id="crumbTitle">IMG_0084</strong></div><div class="frame-id" id="frameId">08 of 24</div></div>
+        <div class="canvas-wrap">
+          <div class="canvas-stage" id="canvasStage">
+            <div class="canvas-help">Click a region to inspect · click a label to assign</div>
+            <svg class="mock-image" viewBox="0 0 1000 640" role="img" aria-label="Studio photograph mock with a compact audio product and two annotated regions" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <pattern id="microgrid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#bbbdb7" stroke-width=".65" opacity=".34"/></pattern>
+                <linearGradient id="desk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7d7d1"/><stop offset="1" stop-color="#c7c8c2"/></linearGradient>
+                <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#faf8f1"/><stop offset="1" stop-color="#c9c9c2"/></linearGradient>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur stdDeviation="12"/></filter>
+              </defs>
+              <rect width="1000" height="640" fill="url(#desk)"/>
+              <rect width="1000" height="640" fill="url(#microgrid)"/>
+              <path d="M0 493H1000" stroke="#a8aaa3" stroke-width="2" opacity=".62"/>
+              <path d="M0 510H1000" stroke="#ecebe4" stroke-width="1" opacity=".75"/>
+              <ellipse cx="535" cy="449" rx="263" ry="32" fill="#575a56" opacity=".21" filter="url(#shadow)"/>
+              <g aria-label="Braun-inspired compact audio object">
+                <rect x="270" y="198" width="502" height="246" rx="5" fill="#70736e" opacity=".22" transform="translate(10 15)"/>
+                <rect x="250" y="176" width="502" height="246" rx="5" fill="url(#body)" stroke="#898b84" stroke-width="2"/>
+                <rect x="277" y="205" width="448" height="170" rx="2" fill="#d1d1ca" stroke="#a5a69f"/>
+                <rect x="300" y="226" width="237" height="129" fill="#303733"/>
+                <circle cx="421" cy="291" r="50" fill="#262c29" stroke="#92958e" stroke-width="5"/>
+                <circle cx="421" cy="291" r="31" fill="none" stroke="#b8b9b0" stroke-width="2"/>
+                <circle cx="421" cy="291" r="9" fill="#e3e0d5"/>
+                <path d="M421 251V267M381 291H397M421 315V331M445 291H461" stroke="#e3e0d5" stroke-width="3"/>
+                <g fill="#60635e"><rect x="568" y="226" width="126" height="7"/><rect x="568" y="244" width="82" height="7"/><rect x="568" y="262" width="112" height="7"/><rect x="568" y="280" width="95" height="7"/><rect x="568" y="298" width="126" height="7"/><rect x="568" y="316" width="69" height="7"/></g>
+                <circle cx="699" cy="350" r="9" fill="#d66d3b"/><rect x="568" y="343" width="77" height="14" fill="#b3b4ad"/>
+                <text x="276" y="402" font-size="11" font-family="sans-serif" letter-spacing="3" fill="#4a4d48">STUDIO / 04</text>
+              </g>
+              <g class="annotation" data-id="one" data-label="product" tabindex="0" role="button" aria-label="Select product annotation">
+                <rect x="232" y="159" width="538" height="282" rx="4"/>
+                <rect class="tag" x="232" y="140" width="74" height="20" fill="#d66d3b"/>
+                <text x="242" y="154" fill="#fbfaf6">PRODUCT · 01</text>
+              </g>
+              <g class="annotation" data-id="two" data-label="detail" tabindex="0" role="button" aria-label="Select detail annotation">
+                <rect x="290" y="216" width="258" height="149" rx="2"/>
+                <rect class="tag" x="290" y="197" width="66" height="20" fill="#cfad49"/>
+                <text x="299" y="211" fill="#fbfaf6">DETAIL · 02</text>
+              </g>
+              <g class="annotation" data-id="three" data-label="background" tabindex="0" role="button" aria-label="Select background annotation">
+                <rect x="98" y="78" width="152" height="468" rx="2"/>
+                <rect class="tag" x="98" y="59" width="101" height="20" fill="#698875"/>
+                <text x="107" y="73" fill="#fbfaf6">BACKGROUND · 03</text>
+              </g>
+            </svg>
+            <div class="zoom" aria-label="Zoom controls"><button type="button" id="zoomOut" aria-label="Zoom out">−</button><button type="button" id="zoomReset" aria-label="Reset zoom">100%</button><button type="button" id="zoomIn" aria-label="Zoom in">+</button></div>
+          </div>
+        </div>
+        <div class="toolbar" aria-label="Annotation tools">
+          <button class="tool active" type="button" data-tool="select" aria-label="Select tool" aria-pressed="true"><svg viewBox="0 0 20 20"><path d="M5 3l9 7-5 .8 2.6 5.2-2.1 1-2.5-5.1L4 15z"/></svg></button>
+          <button class="tool" type="button" data-tool="box" aria-label="Box tool" aria-pressed="false"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="12"/></svg></button>
+          <button class="tool" type="button" data-tool="pan" aria-label="Pan tool" aria-pressed="false"><svg viewBox="0 0 20 20"><path d="M7 9V5.5a1 1 0 012 0V9m0-1V4.5a1 1 0 012 0V9m0-1V5.5a1 1 0 012 0V10m0-1V7a1 1 0 012 0v5c0 3-1.7 5-4.4 5H9c-2.1 0-3.5-1.4-4.3-3.2L3.4 11a1.1 1.1 0 012-.9L7 12.5z"/></svg></button>
+          <span class="toolbar-divider" aria-hidden="true"></span>
+          <button class="tool" id="undoButton" type="button" aria-label="Undo last action" disabled><svg viewBox="0 0 20 20"><path d="M7 6H3v4M3 10c1.7-3.7 6.3-5.2 10-3.5 2.1 1 3.4 3 3.4 5.5 0 3.3-2.5 5.8-6 5.8"/></svg></button>
+          <span class="toolbar-hint" id="toolHint">Select an annotation to edit</span>
+        </div>
+      </section>
+
+      <aside class="inspector" aria-label="Properties">
+        <div class="inspector-heading">Properties</div>
+        <div class="object-title"><small>Current frame</small><h1 id="objectTitle">IMG_0084</h1><p id="objectSubtitle">Compact audio player · studio set</p></div>
+        <dl class="properties">
+          <div class="property"><dt>Resolution</dt><dd>2048 × 1365</dd></div>
+          <div class="property"><dt>Annotations</dt><dd id="annotationCount">03 regions</dd></div>
+          <div class="property"><dt>Confidence</dt><dd>98.2%</dd></div>
+          <div class="property"><dt>Last edited</dt><dd>today, 14:36</dd></div>
+        </dl>
+        <button class="detail-toggle" id="detailToggle" type="button" aria-expanded="false" aria-controls="details"><span>Image details</span><span class="chevron" aria-hidden="true">⌄</span></button>
+        <div class="annotation-readout"><div class="readout-kicker">Selected region</div><div class="readout-label"><i class="label-swatch" id="readoutSwatch" style="background:var(--orange)"></i><span id="readoutLabel">product</span></div><p class="readout-note" id="readoutNote">Box 01 · click a class to reassign</p></div>
+        <div class="inspector-foot">
+          <div class="navigation"><button class="nav-button" id="prevButton" type="button" disabled><span>← Previous</span><b>07</b></button><button class="nav-button" id="nextButton" type="button"><span>Next →</span><b>09</b></button></div>
+          <div class="inspector-foot-note"><span>Unsaved changes</span><strong id="changeCount">0</strong></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <script>
+    const colors = { person: '#315c74', product: '#d66d3b', background: '#698875', detail: '#cfad49' };
+    const names = ['person', 'product', 'background', 'detail'];
+    const state = { frame: 8, activeLabel: 'person', selected: 'one', zoom: 1, history: [], assignments: { one: 'product', two: 'detail', three: 'background' } };
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const frameName = () => `IMG_00${state.frame}`;
+
+    function snapshot() { return JSON.parse(JSON.stringify({ frame: state.frame, activeLabel: state.activeLabel, selected: state.selected, zoom: state.zoom, assignments: state.assignments })); }
+    function pushHistory() { state.history.push(snapshot()); if (state.history.length > 20) state.history.shift(); $('#undoButton').disabled = false; $('#changeCount').textContent = state.history.length; $('#saveButton').classList.remove('saved'); $('#saveState').textContent = 'Unsaved changes'; }
+    function renderLabels() {
+      $$('.label-row').forEach(row => { const active = row.dataset.label === state.activeLabel; row.classList.toggle('active', active); row.setAttribute('aria-pressed', active); });
+      const selectedLabel = state.assignments[state.selected];
+      $('#readoutLabel').textContent = selectedLabel;
+      $('#readoutSwatch').style.background = colors[selectedLabel];
+      $('#readoutNote').textContent = `Box ${state.selected === 'one' ? '01' : state.selected === 'two' ? '02' : '03'} · click a class to reassign`;
+      $('#toolHint').textContent = state.activeLabel === selectedLabel ? 'Select an annotation to edit' : `Ready to assign ${state.activeLabel}`;
+    }
+    function renderAnnotations() {
+      $$('.annotation').forEach(annotation => {
+        const label = state.assignments[annotation.dataset.id];
+        annotation.dataset.label = label;
+        annotation.classList.toggle('selected', annotation.dataset.id === state.selected);
+        const tag = annotation.querySelector('.tag');
+        tag.setAttribute('fill', colors[label]);
+        const text = annotation.querySelector('text');
+        text.textContent = `${label.toUpperCase()} · ${annotation.dataset.id === 'one' ? '01' : annotation.dataset.id === 'two' ? '02' : '03'}`;
+      });
+      $('#annotationCount').textContent = `${Object.keys(state.assignments).length.toString().padStart(2, '0')} regions`;
+    }
+    function renderFrame() {
+      const title = frameName(); $('#crumbTitle').textContent = title; $('#objectTitle').textContent = title; $('#frameId').textContent = `${String(state.frame).padStart(2, '0')} of 24`;
+      $('#prevButton').disabled = state.frame <= 1; $('#nextButton').disabled = state.frame >= 24;
+      $('#prevButton b').textContent = String(Math.max(1, state.frame - 1)).padStart(2, '0'); $('#nextButton b').textContent = String(Math.min(24, state.frame + 1)).padStart(2, '0');
+    }
+    function render() { renderLabels(); renderAnnotations(); renderFrame(); $('.mock-image').style.transform = `scale(${state.zoom})`; $('#zoomReset').textContent = `${Math.round(state.zoom * 100)}%`; }
+
+    $$('.label-row').forEach(row => row.addEventListener('click', () => { if (state.activeLabel !== row.dataset.label) { pushHistory(); state.activeLabel = row.dataset.label; renderLabels(); } }));
+    $$('.annotation').forEach(annotation => {
+      const choose = () => { state.selected = annotation.dataset.id; state.activeLabel = state.assignments[state.selected]; render(); };
+      annotation.addEventListener('click', choose);
+      annotation.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(); } });
+    });
+    $$('.tool').forEach(tool => tool.addEventListener('click', () => { $$('.tool').forEach(item => { const active = item === tool; item.classList.toggle('active', active); item.setAttribute('aria-pressed', active); }); $('#toolHint').textContent = tool.dataset.tool === 'box' ? 'Box tool ready' : tool.dataset.tool === 'pan' ? 'Pan canvas' : 'Select an annotation to edit'; }));
+    $('#detailToggle').addEventListener('click', () => { const open = $('#detailToggle').getAttribute('aria-expanded') === 'true'; $('#detailToggle').setAttribute('aria-expanded', !open); $('#details').hidden = open; });
+    $('#undoButton').addEventListener('click', () => { const previous = state.history.pop(); if (!previous) return; Object.assign(state, previous); $('#changeCount').textContent = state.history.length; $('#undoButton').disabled = !state.history.length; render(); });
+    $('#saveButton').addEventListener('click', () => { $('#saveButton').classList.add('saved'); $('#saveState').textContent = 'All changes saved'; $('#changeCount').textContent = '0'; state.history = []; $('#undoButton').disabled = true; $('#saveButton').textContent = 'Saved'; window.setTimeout(() => { $('#saveButton').textContent = 'Save labels'; }, 1400); });
+    function moveFrame(delta) { const next = Math.max(1, Math.min(24, state.frame + delta)); if (next === state.frame) return; pushHistory(); state.frame = next; renderFrame(); }
+    $('#prevButton').addEventListener('click', () => moveFrame(-1)); $('#nextButton').addEventListener('click', () => moveFrame(1));
+    $('#zoomIn').addEventListener('click', () => { state.zoom = Math.min(1.35, +(state.zoom + .1).toFixed(2)); render(); }); $('#zoomOut').addEventListener('click', () => { state.zoom = Math.max(.8, +(state.zoom - .1).toFixed(2)); render(); }); $('#zoomReset').addEventListener('click', () => { state.zoom = 1; render(); });
+    document.addEventListener('keydown', event => { if (event.target.matches('input, textarea')) return; const index = Number(event.key) - 1; if (index >= 0 && index < names.length) { state.activeLabel = names[index]; renderLabels(); } if (event.key === 'z' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); $('#undoButton').click(); } });
+    render();
+  </script>
+</body>
+</html>
